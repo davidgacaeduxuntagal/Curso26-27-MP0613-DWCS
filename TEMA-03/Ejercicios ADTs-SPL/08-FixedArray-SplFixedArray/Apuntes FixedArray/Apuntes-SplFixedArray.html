@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El array de tamaño fijo (Fixed-size array): SplFixedArray</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+:root { --verde: #c6efa0; --verde-borde: #7cb342; --azul: #dbe9fb; --azul-borde: #5b8fd6; --amarillo: #fff6c4;
+        --amarillo-borde: #d9b200; --naranja: #ffe2c4; --naranja-borde: #e08a2e; --gris: #f1f1f1; --morado: #ece2fb; --morado-borde: #8e6bd1; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; max-width: 820px; margin: 0 auto; padding: 0 12px; background: #fff; }
+.cabecera > span { flex: 1; } .cabecera > span:last-child { text-align: right; } .cabecera .centro { flex: 2; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #999; padding: 6px 0; margin-bottom: 14px; font-size: 9pt; }
+.cabecera .centro { text-align: center; color: #5a4fcf; font-weight: bold; font-style: italic; }
+h1 { font-size: 17pt; color: #3c3c8c; border-bottom: 3px solid #b39ddb; padding-bottom: 4px; }
+h2 { font-size: 13.5pt; background: #c9b8f0; padding: 4px 8px; margin-top: 26px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #3c3c8c; margin-top: 18px; page-break-after: avoid; }
+ul { margin: 4px 0 8px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; color: #6a1b9a; background: #f6f2fb; padding: 0 2px; }
+pre { background: #f7f7f9; border: 1px solid #ddd; border-left: 4px solid #8e6bd1; padding: 8px 10px; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { color: #222; background: none; padding: 0; font-size: 9pt; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: #e8e1f7; } th, td { border: 1px solid #aaa; padding: 4px 6px; text-align: left; vertical-align: top; }
+.caja { border: 1px solid #888; border-radius: 2px; padding: 4px 12px 6px; margin: 12px 0; page-break-inside: avoid; }
+.titulo-caja { font-weight: bold; margin: 4px 0 2px; }
+.caso { background: var(--verde); border-color: var(--verde-borde); }
+.debes { background: var(--azul); border-color: var(--azul-borde); }
+.saber { background: var(--amarillo); border-color: var(--amarillo-borde); }
+.recomendacion { background: var(--naranja); border-color: var(--naranja-borde); }
+.resuelto { background: var(--gris); }
+.resuelto { page-break-inside: auto; }
+.resuelto pre { background: #fff; page-break-inside: auto; }
+.autoeval { background: var(--morado); border-color: var(--morado-borde); }
+figure { margin: 12px 0; text-align: center; page-break-inside: avoid; }
+figure svg, figure img { max-width: 100%; height: auto; }
+figure img { border: 1px solid #ccc; }
+figcaption { font-size: 9pt; color: #555; font-style: italic; margin-top: 4px; }
+.pie { margin-top: 30px; border-top: 1px dashed #999; font-size: 8.5pt; color: #666; text-align: center; padding-top: 6px; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style></head><body>
+<div class="cabecera"><span>CFGS Desarrollo de Aplicaciones Web</span>
+<span class="centro">Módulo Profesional MP0613 — Desarrollo web en entorno servidor<br>ADTs CON LA SPL: EL ARRAY DE TAMAÑO FIJO (SplFixedArray)</span>
+<span>IES de Rodeira</span></div>
+<h1>El array de tamaño fijo (Fixed-size array): SplFixedArray</h1>
+<div class="caja caso"><div class="titulo-caja">Caso práctico</div>
+<p><strong>Carlos</strong> programa la venta de entradas del cine del pueblo. La sala tiene 8 filas de 12 butacas: ni una más ni una menos. Con un array normal, un error de cálculo (<code>$sala[8][3]</code>) crearía en silencio una fila 9 que no existe, y la sala "crecería". <strong>María</strong> le propone <code>SplFixedArray</code>: un array con un <strong>tamaño fijo</strong> que avisa si te sales de él y que, además, ocupa <strong>menos memoria</strong>.</p>
+</div>
+<h2>1.- Qué es un array de tamaño fijo</h2>
+<p>Un <strong>array de tamaño fijo</strong> es la estructura más básica de la informática: <strong>N casillas numeradas de 0 a N-1</strong>, guardadas una detrás de otra. Se accede a cualquier casilla directamente por su número (O(1)).</p>
+<p>Los arrays de PHP son mucho más flexibles: en realidad son <strong>tablas hash ordenadas</strong> que admiten claves de cualquier tipo, crecen solas y mantienen el orden de inserción. Esa flexibilidad tiene un coste en memoria y permite errores silenciosos. <code>SplFixedArray</code> es el array "clásico":</p>
+<table><thead><tr><th>Característica</th><th>Array de PHP</th><th>SplFixedArray</th></tr></thead><tbody><tr><td>Claves</td><td>Enteros o textos, en cualquier orden</td><td>Solo enteros de 0 a tamaño-1</td></tr><tr><td>Tamaño</td><td>Crece solo al escribir</td><td>Fijo (se cambia a propósito con <code>setSize</code>)</td></tr><tr><td>Escribir fuera de rango</td><td>Crea la casilla en silencio</td><td><code>RuntimeException</code></td></tr><tr><td><code>$a[] = $x</code></td><td>Añade al final</td><td><code>Error</code></td></tr><tr><td>Memoria (100 000 números)</td><td>4 MB (lista) / 10 MB (asociativo)</td><td>1,5 MB</td></tr><tr><td>Funciones <code>array_*</code></td><td>Todas</td><td>Hay que convertir con <code>toArray()</code></td></tr></tbody></table>
+<figure><svg viewBox="0 0 560 110" width="560" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif" font-size="13"> <g fill="#dbe9fb" stroke="#5b8fd6" stroke-width="1.5"><rect x="40" y="35" width="66" height="40"/><rect x="106" y="35" width="66" height="40"/><rect x="172" y="35" width="66" height="40" fill="#fff"/><rect x="238" y="35" width="66" height="40"/><rect x="304" y="35" width="66" height="40" fill="#fff"/><rect x="370" y="35" width="66" height="40" fill="#fff"/><rect x="436" y="35" width="66" height="40"/></g> <g text-anchor="middle"><text x="73" y="60">14.5</text><text x="139" y="60">16.0</text><text x="205" y="60" fill="#999">null</text><text x="271" y="60">17.25</text><text x="337" y="60" fill="#999">null</text><text x="403" y="60" fill="#999">null</text><text x="469" y="60">19.5</text> <text x="73" y="28">0 (L)</text><text x="139" y="28">1 (M)</text><text x="205" y="28">2 (X)</text><text x="271" y="28">3 (J)</text><text x="337" y="28">4 (V)</text><text x="403" y="28">5 (S)</text><text x="469" y="28">6 (D)</text></g> <text x="40" y="100" fill="#b71c1c" font-size="12">$semana[7] = 20;  →  RuntimeException: Index invalid or out of range</text> </svg><figcaption>Figura 1. Un SplFixedArray de 7 casillas: los índices van de 0 a 6</figcaption></figure>
+<h2>2.- La clase SplFixedArray</h2>
+<pre><code>&lt;?php
+$semana = new SplFixedArray(7);       // 7 casillas, todas a null
+$semana[0] = 14.5;
+$semana[6] = 19.5;
+echo $semana-&gt;getSize();              // 7 (también count($semana))
+echo $semana[2] ?? 'sin dato';        // "sin dato"
+
+$semana-&gt;setSize(10);                 // crecer: las nuevas valen null
+$semana-&gt;setSize(3);                  // encoger: ¡se pierden los datos que sobran!
+
+$array = $semana-&gt;toArray();          // a array normal, para usar array_sum, array_filter...
+$fijo = SplFixedArray::fromArray([3 =&gt; 'c', 1 =&gt; 'a']);          // conserva las claves: [null, 'a', null, 'c']
+$fijo = SplFixedArray::fromArray([3 =&gt; 'c', 1 =&gt; 'a'], false);   // sin conservarlas: ['c', 'a']</code></pre>
+<ul><li><strong>Índices</strong>: solo enteros (o textos numéricos como <code>'3'</code>). Una clave de texto como <code>'lunes'</code> lanza <code>TypeError</code>; un índice fuera de rango (también los negativos), <code>RuntimeException</code>; y <code>$a[] = $x</code>, <code>Error</code>.
+</li><li><code>isset($a[$i])</code> no da error con índices fuera de rango: devuelve <code>false</code>.
+</li><li><code>foreach</code> recorre las casillas en orden, con su índice.
+</li><li><code>fromArray()</code> exige claves enteras no negativas (si no, <code>InvalidArgumentException</code>).
+</li></ul>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p><strong><code>$fijo[$i]++</code> no funciona.</strong> Los operadores que modifican "en el sitio" (<code>++</code>, <code>--</code>, <code>+=</code>, <code>.=</code>...) no tienen efecto en un <code>SplFixedArray</code>: PHP avisa con "Indirect modification of overloaded element of SplFixedArray has no effect" y el valor no cambia. Hay que leer y escribir por separado:</p>
+<pre><code>&lt;?php
+$histograma[$nota] = $histograma[$nota] + 1;     // bien
+// $histograma[$nota]++;                         // mal: no suma nada</code></pre>
+<p>Lo mismo ocurre con <code>$fijo[$i][] = $x</code> si la casilla contiene un array (no un objeto): se modifica una copia.</p>
+</div>
+<h2>3.- Matrices: SplFixedArray de SplFixedArray</h2>
+<p>Un tablero o una sala de cine es un <code>SplFixedArray</code> de filas, y cada fila otro <code>SplFixedArray</code>. Como las filas son <strong>objetos</strong>, <code>$tablero[$f][$c] = 'X'</code> sí funciona (se modifica el objeto de la fila):</p>
+<pre><code>&lt;?php
+$tablero = new SplFixedArray(3);
+for ($f = 0; $f &lt; 3; $f++) {
+    $tablero[$f] = new SplFixedArray(3);
+}
+$tablero[1][1] = 'X';
+$tablero[3][0] = 'O';                // RuntimeException: no hay fila 3</code></pre>
+<h2>4.- ¿Cuándo usar SplFixedArray?</h2>
+<table><thead><tr><th>Usa SplFixedArray si...</th><th>Usa un array normal si...</th></tr></thead><tbody><tr><td>El número de elementos es fijo o se conoce de antemano (tableros, butacas, días, meses, notas de 0 a 10)</td><td>El tamaño cambia continuamente (un carrito)</td></tr><tr><td>Las claves son posiciones 0..N-1</td><td>Las claves son textos (datos de un cliente)</td></tr><tr><td>Hay muchísimos elementos y la memoria importa (lecturas de sensores)</td><td>Necesitas muchas funciones <code>array_*</code></td></tr><tr><td>Quieres que un índice erróneo dé un error, no un dato nuevo</td><td>Necesitas añadir con <code>$a[] = ...</code></td></tr></tbody></table>
+<h2>5.- Aplicaciones típicas</h2>
+<table><thead><tr><th>Problema</th><th>Cómo</th></tr></thead><tbody><tr><td>Tableros (tres en raya, ajedrez, hundir la flota)</td><td><code>SplFixedArray</code> de filas</td></tr><tr><td>Ocupación de una sala, un aparcamiento, un aula</td><td>Una casilla por plaza (<code>true</code> / <code>false</code> o quién la ocupa)</td></tr><tr><td>Contadores por categoría (histogramas, ventas por mes)</td><td>El índice es la categoría</td></tr><tr><td><strong>Buffer circular</strong> (las últimas N lecturas)</td><td>Una posición que da la vuelta con <code>% N</code>: el nuevo dato sobrescribe al más antiguo</td></tr></tbody></table>
+<h2>6.- Ejercicio resuelto: buffer circular de un sensor</h2>
+<div class="caja resuelto"><div class="titulo-caja">Ejercicio resuelto</div>
+<p>Un sensor de calidad del aire envía una lectura por minuto. Hay que guardar solo las <strong>5 últimas</strong> y calcular su media, sin mover datos de un sitio a otro.</p>
+<pre><code>&lt;?php
+final class BufferCircular
+{
+    private SplFixedArray $datos;
+    private int $siguiente = 0;        // dónde se escribirá la próxima lectura
+    private int $guardados = 0;
+
+    public function __construct(int $capacidad)
+    {
+        $this-&gt;datos = new SplFixedArray($capacidad);
+    }
+
+    public function anadir(float $valor): void
+    {
+        $this-&gt;datos[$this-&gt;siguiente] = $valor;                                  // sobrescribe la más antigua
+        $this-&gt;siguiente = ($this-&gt;siguiente + 1) % $this-&gt;datos-&gt;getSize();     // da la vuelta
+        $this-&gt;guardados = min($this-&gt;guardados + 1, $this-&gt;datos-&gt;getSize());
+    }
+
+    public function media(): float
+    {
+        return round(array_sum(array_slice($this-&gt;datos-&gt;toArray(), 0, $this-&gt;guardados)) / $this-&gt;guardados, 1);
+    }
+}
+$aire = new BufferCircular(5);
+foreach ([42, 45, 51, 48, 60, 72, 68] as $lectura) {
+    $aire-&gt;anadir($lectura);
+}
+echo $aire-&gt;media();               // 59.8 (media de 51, 48, 60, 72 y 68)</code></pre>
+<p>Observa que escribir siempre cuesta lo mismo (O(1)): no se desplaza ningún elemento, solo avanza la posición. Con un array y <code>array_shift</code> habría que renumerar todo en cada lectura.</p>
+</div>
+<div class="caja autoeval"><div class="titulo-caja">Autoevaluación</div>
+<ul><li>¿Qué valor tienen las casillas de un <code>new SplFixedArray(5)</code>? <strong><code>null</code>.</strong>
+</li><li>¿Qué ocurre con <code>$fijo[5] = 1</code> si el tamaño es 5? <strong><code>RuntimeException</code>: los índices van de 0 a 4.</strong>
+</li><li>¿Por qué no funciona <code>$contador[$i]++</code> en un <code>SplFixedArray</code>? <strong>Porque la modificación "indirecta" no se aplica; hay que escribir <code>$contador[$i] = $contador[$i] + 1</code>.</strong>
+</li><li>¿Cómo usas <code>array_sum</code> con un <code>SplFixedArray</code>? <strong>Convirtiéndolo antes: <code>array_sum($fijo-&gt;toArray())</code>.</strong>
+</li></ul>
+</div>
+<h2>7.- Ejercicios</h2>
+<table><thead><tr><th>Fichero</th><th>Contenido</th></tr></thead><tbody><tr><td><code>Ejercicios FixedArray/e01-SplFixedArray.php</code></td><td>La API: crear, leer y escribir, errores, <code>setSize</code>, <code>toArray</code>, <code>fromArray</code>, <code>foreach</code>, memoria</td></tr><tr><td><code>Ejercicios FixedArray/e02-SplFixedArray.php</code></td><td>Aplicaciones: tres en raya, butacas de un cine, histograma, buffer circular</td></tr><tr><td><code>Ejercicios FixedArray/problemas/</code></td><td><code>e01</code> y <code>e02</code>: problemas y soluciones</td></tr></tbody></table>
+<div class="pie">Material elaborado para el módulo MP0613. Ejemplos probados con PHP 8.2.</div>
+</body></html>

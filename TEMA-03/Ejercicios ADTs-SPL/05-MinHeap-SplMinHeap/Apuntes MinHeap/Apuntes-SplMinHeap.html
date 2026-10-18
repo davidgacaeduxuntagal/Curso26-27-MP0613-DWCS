@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El montículo mínimo (Min-heap): SplMinHeap</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+:root { --verde: #c6efa0; --verde-borde: #7cb342; --azul: #dbe9fb; --azul-borde: #5b8fd6; --amarillo: #fff6c4;
+        --amarillo-borde: #d9b200; --naranja: #ffe2c4; --naranja-borde: #e08a2e; --gris: #f1f1f1; --morado: #ece2fb; --morado-borde: #8e6bd1; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; max-width: 820px; margin: 0 auto; padding: 0 12px; background: #fff; }
+.cabecera > span { flex: 1; } .cabecera > span:last-child { text-align: right; } .cabecera .centro { flex: 2; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #999; padding: 6px 0; margin-bottom: 14px; font-size: 9pt; }
+.cabecera .centro { text-align: center; color: #5a4fcf; font-weight: bold; font-style: italic; }
+h1 { font-size: 17pt; color: #3c3c8c; border-bottom: 3px solid #b39ddb; padding-bottom: 4px; }
+h2 { font-size: 13.5pt; background: #c9b8f0; padding: 4px 8px; margin-top: 26px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #3c3c8c; margin-top: 18px; page-break-after: avoid; }
+ul { margin: 4px 0 8px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; color: #6a1b9a; background: #f6f2fb; padding: 0 2px; }
+pre { background: #f7f7f9; border: 1px solid #ddd; border-left: 4px solid #8e6bd1; padding: 8px 10px; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { color: #222; background: none; padding: 0; font-size: 9pt; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: #e8e1f7; } th, td { border: 1px solid #aaa; padding: 4px 6px; text-align: left; vertical-align: top; }
+.caja { border: 1px solid #888; border-radius: 2px; padding: 4px 12px 6px; margin: 12px 0; page-break-inside: avoid; }
+.titulo-caja { font-weight: bold; margin: 4px 0 2px; }
+.caso { background: var(--verde); border-color: var(--verde-borde); }
+.debes { background: var(--azul); border-color: var(--azul-borde); }
+.saber { background: var(--amarillo); border-color: var(--amarillo-borde); }
+.recomendacion { background: var(--naranja); border-color: var(--naranja-borde); }
+.resuelto { background: var(--gris); }
+.resuelto { page-break-inside: auto; }
+.resuelto pre { background: #fff; page-break-inside: auto; }
+.autoeval { background: var(--morado); border-color: var(--morado-borde); }
+figure { margin: 12px 0; text-align: center; page-break-inside: avoid; }
+figure svg, figure img { max-width: 100%; height: auto; }
+figure img { border: 1px solid #ccc; }
+figcaption { font-size: 9pt; color: #555; font-style: italic; margin-top: 4px; }
+.pie { margin-top: 30px; border-top: 1px dashed #999; font-size: 8.5pt; color: #666; text-align: center; padding-top: 6px; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style></head><body>
+<div class="cabecera"><span>CFGS Desarrollo de Aplicaciones Web</span>
+<span class="centro">Módulo Profesional MP0613 — Desarrollo web en entorno servidor<br>ADTs CON LA SPL: EL MONTÍCULO MÍNIMO (SplMinHeap)</span>
+<span>IES de Rodeira</span></div>
+<h1>El montículo mínimo (Min-heap): SplMinHeap</h1>
+<div class="caja caso"><div class="titulo-caja">Caso práctico</div>
+<p><strong>Carlos</strong> prepara la web de una carrera popular. Los tiempos de los corredores llegan <strong>desordenados</strong> desde los dorsales electrónicos, y la pantalla de meta debe mostrar en todo momento <strong>el mejor tiempo</strong>. Ordenar todos los tiempos cada vez que llega uno sería un desperdicio. <strong>María</strong> le propone un <strong>montículo mínimo</strong>: el menor siempre está a mano.</p>
+</div>
+<h2>1.- Qué es un montículo mínimo</h2>
+<p>Un <strong>montículo</strong> (<em>heap</em>) es un <strong>árbol binario casi completo</strong> (todos los niveles llenos salvo, quizá, el último, que se llena de izquierda a derecha) que cumple la <strong>propiedad de montículo</strong>. En un <strong>montículo mínimo</strong>, cada nodo es <strong>menor o igual que sus hijos</strong>, así que el <strong>mínimo está siempre en la raíz</strong>.</p>
+<p>No está ordenado como una lista: entre hermanos o primos no hay ningún orden. Pero esa propiedad basta para:</p>
+<table><thead><tr><th>Operación</th><th>Qué hace</th><th>En SplMinHeap</th><th>Coste</th></tr></thead><tbody><tr><td><em>insert</em></td><td>Añadir un valor</td><td><code>insert($x)</code></td><td>O(log n)</td></tr><tr><td><em>extractMin</em></td><td>Sacar el mínimo</td><td><code>extract()</code></td><td>O(log n)</td></tr><tr><td><em>peek</em></td><td>Ver el mínimo</td><td><code>top()</code></td><td>O(1)</td></tr><tr><td><em>size</em>, <em>isEmpty</em></td><td>Tamaño / ¿vacío?</td><td><code>count($h)</code>, <code>isEmpty()</code></td><td>O(1)</td></tr></tbody></table>
+<p>Al insertar, el valor se pone al final y "sube" mientras sea menor que su padre; al extraer, el último pasa a la raíz y "baja" hasta su sitio. En los dos casos se recorre un solo camino del árbol, de altura log n.</p>
+<figure><svg viewBox="0 0 600 220" width="600" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif" font-size="13"> <g stroke="#888"><line x1="200" y1="35" x2="120" y2="85"/><line x1="200" y1="35" x2="280" y2="85"/><line x1="120" y1="85" x2="75" y2="135"/><line x1="120" y1="85" x2="165" y2="135"/><line x1="280" y1="85" x2="235" y2="135"/></g> <g fill="#dbe9fb" stroke="#5b8fd6" stroke-width="1.5"><circle cx="200" cy="35" r="20" fill="#ffe2c4" stroke="#e08a2e"/><circle cx="120" cy="85" r="20"/><circle cx="280" cy="85" r="20"/><circle cx="75" cy="135" r="20"/><circle cx="165" cy="135" r="20"/><circle cx="235" cy="135" r="20"/></g> <g text-anchor="middle"><text x="200" y="40">39.8</text><text x="120" y="90">39.9</text><text x="280" y="90">45.1</text><text x="75" y="140">42.5</text><text x="165" y="140">41.0</text><text x="235" y="140">47.3</text></g> <text x="225" y="20" fill="#e08a2e" font-weight="bold" font-size="12">top(): el mínimo</text> <g fill="#fff" stroke="#5b8fd6"><rect x="330" y="170" width="44" height="30"/><rect x="374" y="170" width="44" height="30"/><rect x="418" y="170" width="44" height="30"/><rect x="462" y="170" width="44" height="30"/><rect x="506" y="170" width="44" height="30"/><rect x="550" y="170" width="44" height="30"/></g> <g text-anchor="middle" font-size="12"><text x="352" y="190">39.8</text><text x="396" y="190">39.9</text><text x="440" y="190">45.1</text><text x="484" y="190">42.5</text><text x="528" y="190">41.0</text><text x="572" y="190">47.3</text> <text x="352" y="165" font-size="10">0</text><text x="396" y="165" font-size="10">1</text><text x="440" y="165" font-size="10">2</text><text x="484" y="165" font-size="10">3</text><text x="528" y="165" font-size="10">4</text><text x="572" y="165" font-size="10">5</text></g> <text x="330" y="150" font-size="12">array interno (campo "heap" en el depurador):</text> </svg><figcaption>Figura 1. Un montículo mínimo y el array en que se guarda: los hijos de la posición i están en 2i+1 y 2i+2</figcaption></figure>
+<h2>2.- La clase SplMinHeap</h2>
+<p><code>SplMinHeap</code> hereda de la clase abstracta <code>SplHeap</code> (carpeta <code>07-CustomHeap-SplHeap</code>) e implementa <code>Iterator</code> y <code>Countable</code>. Compara los valores con el operador <code>&lt;=&gt;</code>, así que sirve para números, textos, arrays y objetos comparables como <code>DateTime</code>.</p>
+<pre><code>&lt;?php
+$tiempos = new SplMinHeap();
+foreach ([42.5, 39.8, 45.1, 41.0] as $t) {
+    $tiempos-&gt;insert($t);
+    echo "El mejor tiempo es ", $tiempos-&gt;top(), PHP_EOL;   // 42.5, 39.8, 39.8, 39.8
+}
+echo $tiempos-&gt;extract();       // 39.8
+echo $tiempos-&gt;extract();       // 41.0</code></pre>
+<ul><li><strong>Textos</strong>: se comparan byte a byte, así que las mayúsculas van antes que las minúsculas ("Uva" &lt; "kiwi").
+</li><li><strong>Arrays</strong>: se comparan elemento a elemento. Insertar <code>[prioridad, dato]</code> permite ordenar por la prioridad y desempatar por el dato (o por un número de orden).
+</li><li><strong>Fechas</strong>: <code>DateTime</code> y <code>DateTimeImmutable</code> se comparan por el instante.
+</li><li>Con el montículo vacío, <code>extract()</code> y <code>top()</code> lanzan <code>RuntimeException</code>.
+</li></ul>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p><strong>Recorrer un montículo lo vacía.</strong> <code>foreach</code> (y <code>iterator_to_array</code>) van <strong>extrayendo</strong> los elementos en orden, igual que en <code>SplPriorityQueue</code>. Para verlos sin perderlos, recorre una copia: <code>foreach (clone $heap as $x)</code>. Además, el campo <code>heap</code> que se ve en el depurador <strong>no</strong> está ordenado: solo cumple la propiedad de montículo.</p>
+</div>
+<h2>3.- ¿SplMinHeap, SplPriorityQueue o sort()?</h2>
+<ul><li>Si solo necesitas <strong>ordenar un array una vez</strong>, usa <code>sort()</code>: es más simple y rápido.
+</li><li>Si los datos <strong>llegan poco a poco</strong> y en cada momento necesitas el <strong>menor</strong>, usa <code>SplMinHeap</code>.
+</li><li>Si cada elemento tiene una <strong>prioridad distinta del propio valor</strong> (una tarea y su urgencia), <code>SplPriorityQueue</code> es más cómoda; con un montículo, se guarda <code>[prioridad, valor]</code>.
+</li><li>Si necesitas el <strong>mayor</strong>, usa <code>SplMaxHeap</code> (o inserta los números con el signo cambiado).
+</li></ul>
+<h2>4.- Aplicaciones típicas</h2>
+<table><thead><tr><th>Problema</th><th>Cómo</th></tr></thead><tbody><tr><td>El mínimo de un flujo de datos (mejor tiempo, precio más bajo, próxima cita)</td><td><code>top()</code> siempre da el menor</td></tr><tr><td><strong>Los K mayores</strong> de muchísimos datos</td><td>Un min-heap de tamaño K: su raíz es el peor de los K mejores</td></tr><tr><td>Fusionar K listas ordenadas (registros de varios servidores)</td><td>El montículo guarda el primero pendiente de cada lista</td></tr><tr><td>Asignar trabajos a la máquina o sala que antes queda libre</td><td>El montículo guarda la hora en que se libera cada una</td></tr><tr><td>Planificación de eventos por fecha, algoritmos de grafos (Dijkstra, Prim)</td><td>Siempre se procesa el más próximo</td></tr><tr><td>Ordenar (<em>heapsort</em>)</td><td>Insertar todo y extraer todo: O(n log n)</td></tr></tbody></table>
+<h2>5.- Ejercicio resuelto: los K mayores con un montículo mínimo</h2>
+<div class="caja resuelto"><div class="titulo-caja">Ejercicio resuelto</div>
+<p>Un juego online registra miles de partidas. Muestra el <strong>top 3</strong> de puntuaciones sin guardar ni ordenar todas.</p>
+<pre><code>&lt;?php
+function topK(iterable $puntuaciones, int $k): array
+{
+    $mejores = new SplMinHeap();
+    foreach ($puntuaciones as $p) {
+        if (count($mejores) &lt; $k) {
+            $mejores-&gt;insert($p);
+        } elseif ($p &gt; $mejores-&gt;top()) {     // mejor que el PEOR de los K mejores
+            $mejores-&gt;extract();
+            $mejores-&gt;insert($p);
+        }
+    }
+    return array_reverse(iterator_to_array($mejores, false));   // de mayor a menor
+}
+function partidas(): Generator
+{
+    mt_srand(2026);
+    for ($i = 0; $i &lt; 10_000; $i++) {
+        yield mt_rand(0, 99_999);
+    }
+    yield 100_500;                            // un récord al final
+}
+print_r(topK(partidas(), 3));                 // [100500, 99989, 99984]</code></pre>
+<p>¿Por qué un montículo <strong>mínimo</strong> para buscar los <strong>mayores</strong>? Porque lo que necesitamos consultar a cada paso es el <strong>peor</strong> de los K que llevamos: si la nueva puntuación lo supera, lo echamos. El montículo nunca tiene más de K elementos, así que la memoria es mínima aunque haya millones de partidas, y cada paso cuesta O(log K).</p>
+</div>
+<div class="caja autoeval"><div class="titulo-caja">Autoevaluación</div>
+<ul><li>En un montículo mínimo, ¿dónde está el menor elemento? <strong>En la raíz: <code>top()</code>.</strong>
+</li><li>¿Está ordenado el array interno de un montículo? <strong>No: solo cumple que cada padre es menor o igual que sus hijos.</strong>
+</li><li>¿Qué ocurre si recorres un <code>SplMinHeap</code> con <code>foreach</code>? <strong>Se vacía: cada vuelta extrae el mínimo.</strong>
+</li><li>¿Qué tipo de montículo usarías para mantener los 10 mayores de un flujo de datos? <strong>Un montículo mínimo de tamaño 10.</strong>
+</li></ul>
+</div>
+<h2>6.- Ejercicios</h2>
+<table><thead><tr><th>Fichero</th><th>Contenido</th></tr></thead><tbody><tr><td><code>Ejercicios MinHeap/e01-SplMinHeap.php</code></td><td>La API: <code>insert</code>, <code>top</code>, <code>extract</code>, <code>foreach</code> (sobre una copia), textos, arrays y fechas, <em>heapsort</em></td></tr><tr><td><code>Ejercicios MinHeap/e02-SplMinHeap.php</code></td><td>Aplicaciones: top K, fusionar registros de varios servidores, máquina que antes queda libre</td></tr><tr><td><code>Ejercicios MinHeap/problemas/</code></td><td><code>e01</code> y <code>e02</code>: problemas y soluciones</td></tr></tbody></table>
+<div class="pie">Material elaborado para el módulo MP0613. Ejemplos probados con PHP 8.2.</div>
+</body></html>

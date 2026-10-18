@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El conjunto / mapa de objetos (Object set/map): SplObjectStorage</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+:root { --verde: #c6efa0; --verde-borde: #7cb342; --azul: #dbe9fb; --azul-borde: #5b8fd6; --amarillo: #fff6c4;
+        --amarillo-borde: #d9b200; --naranja: #ffe2c4; --naranja-borde: #e08a2e; --gris: #f1f1f1; --morado: #ece2fb; --morado-borde: #8e6bd1; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; max-width: 820px; margin: 0 auto; padding: 0 12px; background: #fff; }
+.cabecera > span { flex: 1; } .cabecera > span:last-child { text-align: right; } .cabecera .centro { flex: 2; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #999; padding: 6px 0; margin-bottom: 14px; font-size: 9pt; }
+.cabecera .centro { text-align: center; color: #5a4fcf; font-weight: bold; font-style: italic; }
+h1 { font-size: 17pt; color: #3c3c8c; border-bottom: 3px solid #b39ddb; padding-bottom: 4px; }
+h2 { font-size: 13.5pt; background: #c9b8f0; padding: 4px 8px; margin-top: 26px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #3c3c8c; margin-top: 18px; page-break-after: avoid; }
+ul { margin: 4px 0 8px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; color: #6a1b9a; background: #f6f2fb; padding: 0 2px; }
+pre { background: #f7f7f9; border: 1px solid #ddd; border-left: 4px solid #8e6bd1; padding: 8px 10px; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { color: #222; background: none; padding: 0; font-size: 9pt; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: #e8e1f7; } th, td { border: 1px solid #aaa; padding: 4px 6px; text-align: left; vertical-align: top; }
+.caja { border: 1px solid #888; border-radius: 2px; padding: 4px 12px 6px; margin: 12px 0; page-break-inside: avoid; }
+.titulo-caja { font-weight: bold; margin: 4px 0 2px; }
+.caso { background: var(--verde); border-color: var(--verde-borde); }
+.debes { background: var(--azul); border-color: var(--azul-borde); }
+.saber { background: var(--amarillo); border-color: var(--amarillo-borde); }
+.recomendacion { background: var(--naranja); border-color: var(--naranja-borde); }
+.resuelto { background: var(--gris); }
+.resuelto { page-break-inside: auto; }
+.resuelto pre { background: #fff; page-break-inside: auto; }
+.autoeval { background: var(--morado); border-color: var(--morado-borde); }
+figure { margin: 12px 0; text-align: center; page-break-inside: avoid; }
+figure svg, figure img { max-width: 100%; height: auto; }
+figure img { border: 1px solid #ccc; }
+figcaption { font-size: 9pt; color: #555; font-style: italic; margin-top: 4px; }
+.pie { margin-top: 30px; border-top: 1px dashed #999; font-size: 8.5pt; color: #666; text-align: center; padding-top: 6px; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style></head><body>
+<div class="cabecera"><span>CFGS Desarrollo de Aplicaciones Web</span>
+<span class="centro">Módulo Profesional MP0613 — Desarrollo web en entorno servidor<br>ADTs CON LA SPL: EL CONJUNTO / MAPA DE OBJETOS (SplObjectStorage)</span>
+<span>IES de Rodeira</span></div>
+<h1>El conjunto / mapa de objetos (Object set/map): SplObjectStorage</h1>
+<div class="caja caso"><div class="titulo-caja">Caso práctico</div>
+<p><strong>Juan</strong> está programando las alertas de stock de la tienda: cuando un producto vuelve a estar disponible, hay que avisar a los clientes que lo pidieron y al panel del almacén, <strong>sin avisar dos veces al mismo</strong>. Su primera idea es un array con los clientes como clave... y PHP le responde <code>Illegal offset type</code>: <strong>los arrays no admiten objetos como clave</strong>. <strong>María</strong> le presenta <code>SplObjectStorage</code>, que es justo eso: un <strong>conjunto de objetos</strong> y un <strong>mapa objeto → dato</strong>.</p>
+</div>
+<h2>1.- Qué es un conjunto / mapa de objetos</h2>
+<ul><li>Un <strong>conjunto</strong> (<em>set</em>) es una colección <strong>sin repetidos</strong> en la que lo importante es saber si un elemento <strong>está o no</strong> (y hacer uniones, intersecciones...).
+</li><li>Un <strong>mapa</strong> (<em>map</em>, diccionario) asocia cada <strong>clave</strong> a un <strong>valor</strong>.
+</li></ul>
+<p>Con los arrays de PHP se pueden hacer conjuntos y mapas <strong>de enteros o textos</strong>, pero no de <strong>objetos</strong>. <code>SplObjectStorage</code> lo resuelve: cada objeto puede estar como mucho una vez y, opcionalmente, llevar un dato asociado.</p>
+<table><thead><tr><th>Operación</th><th>Método</th><th>Coste</th></tr></thead><tbody><tr><td>Añadir (con un dato opcional)</td><td><code>attach($obj, $dato)</code> o <code>$s[$obj] = $dato</code></td><td>O(1)</td></tr><tr><td>Quitar</td><td><code>detach($obj)</code> o <code>unset($s[$obj])</code></td><td>O(1)</td></tr><tr><td>¿Está?</td><td><code>contains($obj)</code> o <code>isset($s[$obj])</code></td><td>O(1)</td></tr><tr><td>Leer el dato</td><td><code>$s[$obj]</code></td><td>O(1)</td></tr><tr><td>Tamaño</td><td><code>count($s)</code></td><td>O(1)</td></tr><tr><td>Unión / diferencia / intersección</td><td><code>addAll($otro)</code> / <code>removeAll($otro)</code> / <code>removeAllExcept($otro)</code></td><td>O(n)</td></tr></tbody></table>
+<figure><svg viewBox="0 0 520 150" width="520" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif" font-size="13"> <defs><marker id="fo1" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 z" fill="#444"/></marker></defs> <g fill="#dbe9fb" stroke="#5b8fd6" stroke-width="1.5"><rect x="30" y="15" width="200" height="34" rx="6"/><rect x="30" y="58" width="200" height="34" rx="6"/><rect x="30" y="101" width="200" height="34" rx="6"/></g> <g fill="#fff6c4" stroke="#d9b200" stroke-width="1.5"><rect x="320" y="15" width="120" height="34" rx="6"/><rect x="320" y="58" width="120" height="34" rx="6"/><rect x="320" y="101" width="120" height="34" rx="6"/></g> <g text-anchor="middle"><text x="130" y="37">Usuario Ana (objeto #1)</text><text x="130" y="80">Usuario Brais (objeto #2)</text><text x="130" y="123">Usuario Carmen (objeto #3)</text> <text x="380" y="37">'10:30'</text><text x="380" y="80">'10:15'</text><text x="380" y="123">'10:20'</text></g> <g stroke="#444" stroke-width="1.4"><line x1="232" y1="32" x2="316" y2="32" marker-end="url(#fo1)"/><line x1="232" y1="75" x2="316" y2="75" marker-end="url(#fo1)"/><line x1="232" y1="118" x2="316" y2="118" marker-end="url(#fo1)"/></g> <text x="450" y="80" font-size="11" fill="#555">getInfo()</text> </svg><figcaption>Figura 1. SplObjectStorage como mapa: cada objeto (clave) lleva su dato</figcaption></figure>
+<h2>2.- La clase SplObjectStorage</h2>
+<pre><code>&lt;?php
+$conectados = new SplObjectStorage();
+$conectados-&gt;attach($ana);
+$conectados-&gt;attach($brais);
+$conectados-&gt;attach($ana);                // ya estaba: no se duplica
+echo count($conectados);                  // 2
+var_dump($conectados-&gt;contains($carmen)); // false
+
+$horaConexion = new SplObjectStorage();   // como mapa
+$horaConexion[$ana] = '10:02';
+$horaConexion[$ana] = '10:30';            // se actualiza el dato
+echo $horaConexion[$ana];                 // "10:30"</code></pre>
+<p>Leer el dato de un objeto que no está lanza <code>UnexpectedValueException</code> ("Object not found"): compruébalo antes con <code>isset()</code> o <code>contains()</code>.</p>
+<p><strong>Recorrer.</strong> En <code>foreach</code>, la <strong>clave</strong> es un número de orden (0, 1, 2...) y el <strong>valor es el objeto</strong>. El dato asociado al objeto actual se lee con <code>getInfo()</code> y se cambia con <code>setInfo()</code>:</p>
+<pre><code>&lt;?php
+foreach ($horaConexion as $i =&gt; $usuario) {
+    echo "$usuario-&gt;nombre desde las " . $horaConexion-&gt;getInfo(), PHP_EOL;
+}</code></pre>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p><strong>No borres mientras recorres.</strong> Si haces <code>detach()</code> del objeto actual dentro de un <code>foreach</code> sobre el mismo <code>SplObjectStorage</code>, el recorrido se desplaza y <strong>se salta el siguiente</strong> elemento. Recorre una <strong>copia</strong> (<code>foreach (clone $s as $obj)</code>) y borra del original, o guarda los que hay que borrar en otro conjunto y quítalos después con <code>removeAll()</code>. Lo mismo ocurre si un observador se da de baja dentro de <code>update()</code> (apartado 4).</p>
+</div>
+<h2>3.- ¿Cuándo son "el mismo" dos objetos? getHash()</h2>
+<p>Por defecto, <code>SplObjectStorage</code> identifica cada objeto por su <strong>identidad</strong> (como <code>===</code>): dos objetos distintos con los mismos datos cuentan como <strong>dos</strong>. Si quieres otro criterio (por ejemplo, dos <code>Usuario</code> con el mismo email son el mismo), hereda y redefine <strong><code>getHash()</code></strong>, que devuelve el texto que identifica al objeto:</p>
+<pre><code>&lt;?php
+final class UsuariosPorEmail extends SplObjectStorage
+{
+    public function getHash(object $usuario): string
+    {
+        return mb_strtolower($usuario-&gt;email);
+    }
+}</code></pre>
+<p><strong>Las operaciones de conjuntos</strong> (<code>addAll</code>, <code>removeAll</code>, <code>removeAllExcept</code>) modifican el propio conjunto: haz antes una copia con <code>clone</code> si quieres conservar el original.</p>
+<pre><code>&lt;?php
+$ambos = clone $robotica;
+$ambos-&gt;removeAllExcept($teatro);        // intersección: los que van a los dos talleres
+$soloRobotica = clone $robotica;
+$soloRobotica-&gt;removeAll($teatro);       // diferencia</code></pre>
+<div class="caja saber"><div class="titulo-caja">Para saber más</div>
+<p><strong>WeakMap</strong> (PHP 8.0) es otro mapa objeto → dato, pero <strong>"débil"</strong>: no impide que el objeto se libere. Cuando nadie más usa el objeto, su entrada desaparece sola. Es ideal para <strong>cachés</strong> de datos calculados sobre objetos. <code>SplObjectStorage</code>, en cambio, mantiene vivos los objetos que contiene y tiene operaciones de conjuntos. Cuidado: una variable que todavía apunte al objeto (por ejemplo, la de un <code>foreach</code> anterior) también lo mantiene vivo.</p>
+</div>
+<h2>4.- El patrón Observador: SplSubject y SplObserver</h2>
+<p>La SPL incluye dos <strong>interfaces</strong> para el patrón de diseño <strong>Observador</strong>: un <strong>sujeto</strong> (<code>SplSubject</code>: <code>attach</code>, <code>detach</code>, <code>notify</code>) avisa a sus <strong>observadores</strong> (<code>SplObserver</code>: <code>update</code>) cuando cambia algo. El sujeto guarda a sus observadores en un <code>SplObjectStorage</code>, así nunca avisa dos veces al mismo, y no necesita saber qué hace cada uno: se pueden añadir observadores nuevos sin tocar la clase del sujeto.</p>
+<pre><code>&lt;?php
+final class ProductoConStock implements SplSubject
+{
+    private SplObjectStorage $observadores;
+
+    public function __construct(public readonly string $nombre, private int $stock = 0)
+    {
+        $this-&gt;observadores = new SplObjectStorage();
+    }
+
+    public function attach(SplObserver $o): void
+    {
+        $this-&gt;observadores-&gt;attach($o);
+    }
+
+    public function detach(SplObserver $o): void
+    {
+        $this-&gt;observadores-&gt;detach($o);
+    }
+
+    public function notify(): void
+    {
+        foreach (clone $this-&gt;observadores as $o) {   // copia: un observador puede darse de baja
+            $o-&gt;update($this);
+        }
+    }
+
+    public function reponer(int $unidades): void
+    {
+        $this-&gt;stock += $unidades;
+        $this-&gt;notify();
+    }
+
+    public function stock(): int
+    {
+        return $this-&gt;stock;
+    }
+}
+final class PanelAlmacen implements SplObserver
+{
+    public function update(SplSubject $producto): void
+    {
+        echo "{$producto-&gt;nombre}: {$producto-&gt;stock()} unidades", PHP_EOL;
+    }
+}</code></pre>
+<h2>5.- Aplicaciones típicas</h2>
+<table><thead><tr><th>Problema</th><th>Cómo</th></tr></thead><tbody><tr><td>Usuarios conectados, sesiones abiertas</td><td>Conjunto de objetos (<code>attach</code> / <code>detach</code> / <code>contains</code>)</td></tr><tr><td>Carrito objeto Producto → cantidad</td><td>Mapa (<code>$s[$producto] = $cantidad</code>)</td></tr><tr><td>Patrón Observador (alertas, eventos, boletines)</td><td><code>SplSubject</code> + <code>SplObserver</code> + <code>SplObjectStorage</code></td></tr><tr><td>Redes de seguidores, grafos de objetos</td><td>Cada objeto con un <code>SplObjectStorage</code> de sus vecinos</td></tr><tr><td>Unión, intersección y diferencia de grupos</td><td><code>addAll</code>, <code>removeAllExcept</code>, <code>removeAll</code></td></tr><tr><td>Cachés de datos asociados a objetos</td><td><code>WeakMap</code></td></tr></tbody></table>
+<h2>6.- Ejercicio resuelto: el carrito de la tienda</h2>
+<div class="caja resuelto"><div class="titulo-caja">Ejercicio resuelto</div>
+<p>Programa un carrito que guarde, para cada objeto <code>Producto</code>, cuántas unidades se compran; que sume unidades si el producto ya estaba; que permita quitar productos; y que calcule el total.</p>
+<pre><code>&lt;?php
+final class Producto
+{
+    public function __construct(public readonly string $ref, public readonly string $nombre, public readonly float $precio)
+    {
+    }
+}
+final class Carrito implements Countable
+{
+    private SplObjectStorage $lineas;            // Producto =&gt; unidades
+
+    public function __construct()
+    {
+        $this-&gt;lineas = new SplObjectStorage();
+    }
+
+    public function anadir(Producto $p, int $unidades = 1): void
+    {
+        $actual = $this-&gt;lineas-&gt;contains($p) ? $this-&gt;lineas[$p] : 0;
+        $this-&gt;lineas[$p] = $actual + $unidades;
+    }
+
+    public function quitar(Producto $p): void
+    {
+        $this-&gt;lineas-&gt;detach($p);
+    }
+
+    public function total(): float
+    {
+        $total = 0;
+        foreach ($this-&gt;lineas as $producto) {
+            $total += $producto-&gt;precio * $this-&gt;lineas-&gt;getInfo();
+        }
+        return round($total, 2);
+    }
+
+    public function count(): int
+    {
+        return array_sum(array_map(fn($p) =&gt; $this-&gt;lineas[$p], iterator_to_array($this-&gt;lineas, false)));
+    }
+}
+$raton = new Producto('RAT-01', 'Ratón', 19.95);
+$teclado = new Producto('TEC-02', 'Teclado', 49.50);
+$carrito = new Carrito();
+$carrito-&gt;anadir($raton, 2);
+$carrito-&gt;anadir($teclado);
+$carrito-&gt;anadir($raton);                        // ya estaba: ahora 3
+echo count($carrito);                            // 4
+echo $carrito-&gt;total();                          // 109.35</code></pre>
+<p>Observa que la clave es el <strong>propio objeto</strong>: al recorrer el carrito se recupera el producto entero (con su nombre y su precio), no solo una referencia en texto que habría que volver a buscar.</p>
+</div>
+<div class="caja autoeval"><div class="titulo-caja">Autoevaluación</div>
+<ul><li>¿Se puede usar un objeto como clave de un array de PHP? <strong>No: da <code>TypeError: Illegal offset type</code>. Para eso está <code>SplObjectStorage</code>.</strong>
+</li><li>Se hace <code>attach($ana)</code> dos veces. ¿Cuánto vale <code>count()</code>? <strong>1: no se duplica.</strong>
+</li><li>En un <code>foreach</code> sobre un <code>SplObjectStorage</code>, ¿qué es el valor? ¿Y cómo se obtiene el dato asociado? <strong>El objeto; el dato, con <code>getInfo()</code>.</strong>
+</li><li>¿Qué hay que redefinir para que dos objetos distintos con el mismo email cuenten como uno? <strong><code>getHash()</code>.</strong>
+</li><li>¿Por qué <code>notify()</code> recorre una copia de los observadores? <strong>Porque si un observador se da de baja durante el recorrido, el <code>foreach</code> se saltaría al siguiente.</strong>
+</li></ul>
+</div>
+<h2>7.- Ejercicios</h2>
+<table><thead><tr><th>Fichero</th><th>Contenido</th></tr></thead><tbody><tr><td><code>Ejercicios ObjectStorage/e01-SplObjectStorage.php</code></td><td>La API: como conjunto y como mapa, recorrer con <code>getInfo</code> / <code>setInfo</code>, operaciones de conjuntos, <code>getHash</code>, <code>WeakMap</code></td></tr><tr><td><code>Ejercicios ObjectStorage/e02-SplObjectStorage.php</code></td><td>Aplicaciones: carrito, patrón Observador con <code>SplSubject</code> / <code>SplObserver</code>, red de seguidores, caché con <code>WeakMap</code></td></tr><tr><td><code>Ejercicios ObjectStorage/problemas/</code></td><td><code>e01</code> y <code>e02</code>: problemas y soluciones</td></tr></tbody></table>
+<div class="pie">Material elaborado para el módulo MP0613. Ejemplos probados con PHP 8.2.</div>
+</body></html>

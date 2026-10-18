@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La pila (Stack): SplStack</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+:root { --verde: #c6efa0; --verde-borde: #7cb342; --azul: #dbe9fb; --azul-borde: #5b8fd6; --amarillo: #fff6c4;
+        --amarillo-borde: #d9b200; --naranja: #ffe2c4; --naranja-borde: #e08a2e; --gris: #f1f1f1; --morado: #ece2fb; --morado-borde: #8e6bd1; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; max-width: 820px; margin: 0 auto; padding: 0 12px; background: #fff; }
+.cabecera > span { flex: 1; } .cabecera > span:last-child { text-align: right; } .cabecera .centro { flex: 2; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #999; padding: 6px 0; margin-bottom: 14px; font-size: 9pt; }
+.cabecera .centro { text-align: center; color: #5a4fcf; font-weight: bold; font-style: italic; }
+h1 { font-size: 17pt; color: #3c3c8c; border-bottom: 3px solid #b39ddb; padding-bottom: 4px; }
+h2 { font-size: 13.5pt; background: #c9b8f0; padding: 4px 8px; margin-top: 26px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #3c3c8c; margin-top: 18px; page-break-after: avoid; }
+ul { margin: 4px 0 8px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; color: #6a1b9a; background: #f6f2fb; padding: 0 2px; }
+pre { background: #f7f7f9; border: 1px solid #ddd; border-left: 4px solid #8e6bd1; padding: 8px 10px; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { color: #222; background: none; padding: 0; font-size: 9pt; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: #e8e1f7; } th, td { border: 1px solid #aaa; padding: 4px 6px; text-align: left; vertical-align: top; }
+.caja { border: 1px solid #888; border-radius: 2px; padding: 4px 12px 6px; margin: 12px 0; page-break-inside: avoid; }
+.titulo-caja { font-weight: bold; margin: 4px 0 2px; }
+.caso { background: var(--verde); border-color: var(--verde-borde); }
+.debes { background: var(--azul); border-color: var(--azul-borde); }
+.saber { background: var(--amarillo); border-color: var(--amarillo-borde); }
+.recomendacion { background: var(--naranja); border-color: var(--naranja-borde); }
+.resuelto { background: var(--gris); }
+.resuelto { page-break-inside: auto; }
+.resuelto pre { background: #fff; page-break-inside: auto; }
+.autoeval { background: var(--morado); border-color: var(--morado-borde); }
+figure { margin: 12px 0; text-align: center; page-break-inside: avoid; }
+figure svg, figure img { max-width: 100%; height: auto; }
+figure img { border: 1px solid #ccc; }
+figcaption { font-size: 9pt; color: #555; font-style: italic; margin-top: 4px; }
+.pie { margin-top: 30px; border-top: 1px dashed #999; font-size: 8.5pt; color: #666; text-align: center; padding-top: 6px; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style></head><body>
+<div class="cabecera"><span>CFGS Desarrollo de Aplicaciones Web</span>
+<span class="centro">Módulo Profesional MP0613 — Desarrollo web en entorno servidor<br>ADTs CON LA SPL: LA PILA (SplStack)</span>
+<span>IES de Rodeira</span></div>
+<h1>La pila (Stack): SplStack</h1>
+<div class="caja caso"><div class="titulo-caja">Caso práctico</div>
+<p><strong>Carlos</strong> está programando el editor de descripciones de productos de la tienda de <strong>BK Programación</strong> y quiere añadir el botón <strong>Deshacer</strong>. Lo primero que se le ocurre es guardar todos los cambios en un array y buscar "el último"... <strong>María</strong> le dice que eso tiene un nombre: una <strong>pila</strong>, y que PHP ya trae una implementación en la SPL, <code>SplStack</code>.</p>
+</div>
+<h2>1.- Qué es una pila</h2>
+<p>Una <strong>pila</strong> (<em>stack</em>) es un tipo de dato abstracto (ADT) en el que los elementos se añaden y se quitan <strong>siempre por el mismo extremo</strong>, la <strong>cima</strong>. El último elemento que entra es el primero que sale: <strong>LIFO</strong> (<em>Last In, First Out</em>). Es como una pila de platos: se pone uno encima y se coge el de arriba.</p>
+<figure><svg viewBox="0 0 520 210" width="520" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif" font-size="13"> <defs><marker id="fp1" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#444"/></marker></defs> <g fill="#dbe9fb" stroke="#5b8fd6" stroke-width="1.5"> <rect x="190" y="50" width="140" height="34"/><rect x="190" y="84" width="140" height="34"/><rect x="190" y="118" width="140" height="34"/><rect x="190" y="152" width="140" height="34"/> </g> <rect x="190" y="50" width="140" height="34" fill="#ffe2c4" stroke="#e08a2e" stroke-width="2"/> <g text-anchor="middle"><text x="260" y="72">cambiar el color</text><text x="260" y="106">poner en negrita</text><text x="260" y="140">escribir "Hola"</text><text x="260" y="174">abrir fichero</text></g> <path d="M190,40 L190,186 L330,186 L330,40" fill="none" stroke="#333" stroke-width="2"/> <text x="345" y="72" font-weight="bold">← cima (top)</text><text x="345" y="174">← fondo</text> <line x1="110" y1="20" x2="200" y2="48" stroke="#2e7d32" stroke-width="2" marker-end="url(#fp1)"/> <text x="20" y="20" fill="#2e7d32" font-weight="bold">push('…')</text> <line x1="320" y1="48" x2="420" y2="20" stroke="#b71c1c" stroke-width="2" marker-end="url(#fp1)"/> <text x="425" y="20" fill="#b71c1c" font-weight="bold">pop()</text> </svg><figcaption>Figura 1. Una pila: push mete en la cima, pop saca de la cima</figcaption></figure>
+<p>Las operaciones del ADT son:</p>
+<table><thead><tr><th>Operación</th><th>Qué hace</th><th>En SplStack</th><th>Coste</th></tr></thead><tbody><tr><td><em>push</em></td><td>Meter un elemento en la cima</td><td><code>push($x)</code> (o <code>$pila[] = $x</code>)</td><td>O(1)</td></tr><tr><td><em>pop</em></td><td>Sacar el elemento de la cima y devolverlo</td><td><code>pop()</code></td><td>O(1)</td></tr><tr><td><em>top</em> / <em>peek</em></td><td>Ver el elemento de la cima sin sacarlo</td><td><code>top()</code></td><td>O(1)</td></tr><tr><td><em>isEmpty</em></td><td>¿Está vacía?</td><td><code>isEmpty()</code></td><td>O(1)</td></tr><tr><td><em>size</em></td><td>Número de elementos</td><td><code>count($pila)</code></td><td>O(1)</td></tr></tbody></table>
+<p>O(1) significa que la operación tarda lo mismo con 10 elementos que con un millón (apartado 1 de la introducción).</p>
+<h2>2.- La clase SplStack</h2>
+<p><code>SplStack</code> hereda de <code>SplDoublyLinkedList</code> (la lista doblemente enlazada) fijando su modo de recorrido en LIFO, e implementa <code>Iterator</code>, <code>Countable</code>, <code>ArrayAccess</code> y <code>Serializable</code>.</p>
+<pre><code>&lt;?php
+$acciones = new SplStack();
+$acciones-&gt;push('escribir "Hola"');
+$acciones-&gt;push('poner en negrita');
+$acciones-&gt;push('cambiar el color');
+
+echo $acciones-&gt;top();          // "cambiar el color" (solo mirar)
+echo $acciones-&gt;pop();          // "cambiar el color" (deshacer)
+echo $acciones-&gt;pop();          // "poner en negrita"
+echo count($acciones);          // 1</code></pre>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p>Con una pila <strong>vacía</strong>, <code>pop()</code> y <code>top()</code> lanzan <code>RuntimeException</code> ("Can't pop from an empty datastructure"). Comprueba antes <code>isEmpty()</code> o captura la excepción. Un array, en cambio, devuelve <code>null</code> en silencio con <code>array_pop([])</code>, y el error pasa desapercibido.</p>
+</div>
+<h2>3.- Recorrer una pila</h2>
+<ul><li><strong><code>foreach</code></strong> recorre la pila de la <strong>cima al fondo</strong> y <strong>no</strong> saca los elementos (modo <code>IT_MODE_KEEP</code>). Las <strong>claves</strong> que da son las posiciones contadas desde el fondo (con 4 elementos: 3, 2, 1, 0).
+</li><li>Con <strong><code>$pila[0]</code></strong> se accede a la <strong>cima</strong>, <code>$pila[1]</code> al de debajo... ¡Cuidado: es al revés que las claves del <code>foreach</code>!
+</li><li><code>SplStack</code> <strong>no tiene <code>toArray()</code></strong>: para obtener un array se usa <code>iterator_to_array($pila, false)</code> (de la cima al fondo).
+</li><li>Con <code>setIteratorMode(SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_DELETE)</code> el <code>foreach</code> va <strong>sacando</strong> los elementos. El sentido (LIFO) de una <code>SplStack</code> no se puede cambiar: intentar ponerla en FIFO lanza <code>RuntimeException</code>.
+</li></ul>
+<h2>4.- ¿SplStack o un array?</h2>
+<p>Un array de PHP también sirve como pila: <code>array_push($a, $x)</code> (o <code>$a[] = $x</code>), <code>array_pop($a)</code> y <code>end($a)</code> para ver la cima, todo O(1). <code>SplStack</code> aporta:</p>
+<ul><li>un <strong>objeto con nombre</strong> que deja claro qué es y qué operaciones admite (<code>top</code>, <code>isEmpty</code>), y que se puede usar como <strong>tipo</strong> (<code>function deshacer(SplStack $acciones)</code>),
+</li><li><strong>excepciones</strong> si se saca de una pila vacía,
+</li><li>y es un objeto: se pasa a las funciones sin copiarse (el array se copia).
+</li></ul>
+<p>Para pilas pequeñas y código sencillo, un array está bien; cuando la pila es parte del diseño (un editor, un intérprete), <code>SplStack</code> comunica mejor la intención.</p>
+<h2>5.- Aplicaciones típicas</h2>
+<table><thead><tr><th>Problema</th><th>Por qué una pila</th></tr></thead><tbody><tr><td>Deshacer / rehacer</td><td>La última acción es la primera que se deshace (dos pilas: deshacer y rehacer)</td></tr><tr><td>Botón "Atrás" del navegador</td><td>Se vuelve a la última página visitada</td></tr><tr><td>Paréntesis o etiquetas HTML equilibrados</td><td>Cada cierre debe corresponder a la última apertura pendiente</td></tr><tr><td>Calculadoras (notación polaca inversa)</td><td>Los operandos se apilan; el operador usa los dos últimos</td></tr><tr><td>Recorridos en profundidad (carpetas, laberintos, grafos)</td><td>Se avanza por un camino hasta el final y se retrocede al último punto pendiente</td></tr><tr><td>Llamadas a funciones (la <em>pila de llamadas</em>)</td><td>Cada llamada se apila; al terminar, se vuelve a la anterior</td></tr></tbody></table>
+<pre><code>&lt;?php
+// Calculadora en notación polaca inversa: "3 4 + 2 *" = (3 + 4) * 2
+function evaluarRpn(string $expresion): float
+{
+    $pila = new SplStack();
+    foreach (preg_split('/\s+/', trim($expresion)) as $token) {
+        if (is_numeric($token)) {
+            $pila-&gt;push((float) $token);
+            continue;
+        }
+        $b = $pila-&gt;pop();                   // el de arriba es el SEGUNDO operando
+        $a = $pila-&gt;pop();
+        $pila-&gt;push(match ($token) { '+' =&gt; $a + $b, '-' =&gt; $a - $b, '*' =&gt; $a * $b, '/' =&gt; $a / $b });
+    }
+    return $pila-&gt;pop();
+}
+echo evaluarRpn('3 4 + 2 *');                 // 14</code></pre>
+<h2>6.- Ejercicio resuelto: deshacer y rehacer</h2>
+<div class="caja resuelto"><div class="titulo-caja">Ejercicio resuelto</div>
+<p>Crea una clase <code>Editor</code> con <code>escribir()</code>, <code>deshacer()</code> y <code>rehacer()</code>, como el Ctrl+Z y el Ctrl+Y de cualquier editor.</p>
+<pre><code>&lt;?php
+final class Editor
+{
+    private string $texto = '';
+    private SplStack $deshacer;
+    private SplStack $rehacer;
+
+    public function __construct()
+    {
+        $this-&gt;deshacer = new SplStack();
+        $this-&gt;rehacer = new SplStack();
+    }
+
+    public function escribir(string $trozo): void
+    {
+        $this-&gt;deshacer-&gt;push($this-&gt;texto);     // guardamos el estado ANTERIOR
+        $this-&gt;texto .= $trozo;
+        $this-&gt;rehacer = new SplStack();         // un cambio nuevo invalida el "rehacer"
+    }
+
+    public function deshacer(): void
+    {
+        if (!$this-&gt;deshacer-&gt;isEmpty()) {
+            $this-&gt;rehacer-&gt;push($this-&gt;texto);
+            $this-&gt;texto = $this-&gt;deshacer-&gt;pop();
+        }
+    }
+
+    public function rehacer(): void
+    {
+        if (!$this-&gt;rehacer-&gt;isEmpty()) {
+            $this-&gt;deshacer-&gt;push($this-&gt;texto);
+            $this-&gt;texto = $this-&gt;rehacer-&gt;pop();
+        }
+    }
+
+    public function texto(): string
+    {
+        return $this-&gt;texto;
+    }
+}
+$editor = new Editor();
+$editor-&gt;escribir('Hola');
+$editor-&gt;escribir(', mundo');
+$editor-&gt;escribir('!');
+$editor-&gt;deshacer();
+$editor-&gt;deshacer();
+echo $editor-&gt;texto();          // "Hola"
+$editor-&gt;rehacer();
+echo $editor-&gt;texto();          // "Hola, mundo"</code></pre>
+<p>Observa que las dos pilas son <strong>privadas</strong>: desde fuera solo se puede escribir, deshacer y rehacer, y nadie puede dejar el editor en un estado incoherente.</p>
+</div>
+<div class="caja autoeval"><div class="titulo-caja">Autoevaluación</div>
+<ul><li>Si se hace <code>push('a')</code>, <code>push('b')</code>, <code>push('c')</code> y después <code>pop()</code>, ¿qué se obtiene? <strong>"c": el último en entrar.</strong>
+</li><li>¿Qué diferencia hay entre <code>top()</code> y <code>pop()</code>? <strong><code>top()</code> solo mira la cima; <code>pop()</code> la saca.</strong>
+</li><li>¿Qué ocurre al hacer <code>pop()</code> en una <code>SplStack</code> vacía? <strong>Lanza <code>RuntimeException</code>.</strong>
+</li><li>En una <code>SplStack</code>, ¿<code>$pila[0]</code> es la cima o el fondo? <strong>La cima.</strong>
+</li><li>¿Cómo obtienes un array con el contenido de una <code>SplStack</code>? <strong><code>iterator_to_array($pila, false)</code> (no existe <code>toArray()</code>).</strong>
+</li></ul>
+</div>
+<h2>7.- Ejercicios</h2>
+<table><thead><tr><th>Fichero</th><th>Contenido</th></tr></thead><tbody><tr><td><code>Ejercicios Stack/e01-SplStack.php</code></td><td>La API: <code>push</code>, <code>top</code>, <code>pop</code>, pila vacía, <code>foreach</code> y posiciones, <code>IT_MODE_DELETE</code>, comparación con un array</td></tr><tr><td><code>Ejercicios Stack/e02-SplStack.php</code></td><td>Aplicaciones: deshacer y rehacer, HTML bien anidado, notación polaca inversa, recorrido en profundidad sin recursividad</td></tr><tr><td><code>Ejercicios Stack/problemas/</code></td><td><code>e01</code> y <code>e02</code>: problemas (<code>_problema.php</code>) y soluciones (<code>_problema_solucion.php</code>)</td></tr></tbody></table>
+<div class="pie">Material elaborado para el módulo MP0613. Ejemplos probados con PHP 8.2.</div>
+</body></html>

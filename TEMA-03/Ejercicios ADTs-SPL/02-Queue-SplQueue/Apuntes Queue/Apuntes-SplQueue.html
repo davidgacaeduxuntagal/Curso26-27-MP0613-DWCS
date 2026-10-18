@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La cola (Queue): SplQueue</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+:root { --verde: #c6efa0; --verde-borde: #7cb342; --azul: #dbe9fb; --azul-borde: #5b8fd6; --amarillo: #fff6c4;
+        --amarillo-borde: #d9b200; --naranja: #ffe2c4; --naranja-borde: #e08a2e; --gris: #f1f1f1; --morado: #ece2fb; --morado-borde: #8e6bd1; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; max-width: 820px; margin: 0 auto; padding: 0 12px; background: #fff; }
+.cabecera > span { flex: 1; } .cabecera > span:last-child { text-align: right; } .cabecera .centro { flex: 2; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #999; padding: 6px 0; margin-bottom: 14px; font-size: 9pt; }
+.cabecera .centro { text-align: center; color: #5a4fcf; font-weight: bold; font-style: italic; }
+h1 { font-size: 17pt; color: #3c3c8c; border-bottom: 3px solid #b39ddb; padding-bottom: 4px; }
+h2 { font-size: 13.5pt; background: #c9b8f0; padding: 4px 8px; margin-top: 26px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #3c3c8c; margin-top: 18px; page-break-after: avoid; }
+ul { margin: 4px 0 8px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; color: #6a1b9a; background: #f6f2fb; padding: 0 2px; }
+pre { background: #f7f7f9; border: 1px solid #ddd; border-left: 4px solid #8e6bd1; padding: 8px 10px; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { color: #222; background: none; padding: 0; font-size: 9pt; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: #e8e1f7; } th, td { border: 1px solid #aaa; padding: 4px 6px; text-align: left; vertical-align: top; }
+.caja { border: 1px solid #888; border-radius: 2px; padding: 4px 12px 6px; margin: 12px 0; page-break-inside: avoid; }
+.titulo-caja { font-weight: bold; margin: 4px 0 2px; }
+.caso { background: var(--verde); border-color: var(--verde-borde); }
+.debes { background: var(--azul); border-color: var(--azul-borde); }
+.saber { background: var(--amarillo); border-color: var(--amarillo-borde); }
+.recomendacion { background: var(--naranja); border-color: var(--naranja-borde); }
+.resuelto { background: var(--gris); }
+.resuelto { page-break-inside: auto; }
+.resuelto pre { background: #fff; page-break-inside: auto; }
+.autoeval { background: var(--morado); border-color: var(--morado-borde); }
+figure { margin: 12px 0; text-align: center; page-break-inside: avoid; }
+figure svg, figure img { max-width: 100%; height: auto; }
+figure img { border: 1px solid #ccc; }
+figcaption { font-size: 9pt; color: #555; font-style: italic; margin-top: 4px; }
+.pie { margin-top: 30px; border-top: 1px dashed #999; font-size: 8.5pt; color: #666; text-align: center; padding-top: 6px; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style></head><body>
+<div class="cabecera"><span>CFGS Desarrollo de Aplicaciones Web</span>
+<span class="centro">Módulo Profesional MP0613 — Desarrollo web en entorno servidor<br>ADTs CON LA SPL: LA COLA (SplQueue)</span>
+<span>IES de Rodeira</span></div>
+<h1>La cola (Queue): SplQueue</h1>
+<div class="caja caso"><div class="titulo-caja">Caso práctico</div>
+<p>La tienda de <strong>BK Programación</strong> envía un correo de confirmación con cada pedido. Cuando hay muchos pedidos a la vez, la página tarda en responder porque espera a que se envíe el correo. <strong>Juan</strong> propone que la web solo <strong>apunte</strong> el correo en una <strong>cola</strong> y responda enseguida, y que otro proceso los vaya enviando <strong>en el orden en que llegaron</strong>.</p>
+</div>
+<h2>1.- Qué es una cola</h2>
+<p>Una <strong>cola</strong> (<em>queue</em>) es un ADT en el que los elementos <strong>entran por un extremo</strong> (el <em>final</em>) y <strong>salen por el otro</strong> (el <em>frente</em>). El primero que entra es el primero que sale: <strong>FIFO</strong> (<em>First In, First Out</em>), como en la cola de la panadería.</p>
+<figure><svg viewBox="0 0 600 150" width="600" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif" font-size="13"> <defs><marker id="fq1" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#444"/></marker></defs> <g fill="#dbe9fb" stroke="#5b8fd6" stroke-width="1.5"> <rect x="170" y="50" width="80" height="44"/><rect x="250" y="50" width="80" height="44"/><rect x="330" y="50" width="80" height="44"/> </g> <rect x="170" y="50" width="80" height="44" fill="#ffe2c4" stroke="#e08a2e" stroke-width="2"/> <g text-anchor="middle"><text x="210" y="77">Ana</text><text x="290" y="77">Brais</text><text x="370" y="77">Carmen</text> <text x="210" y="115">frente</text><text x="210" y="131" font-size="11">(bottom)</text><text x="370" y="115">final</text><text x="370" y="131" font-size="11">(top)</text></g> <line x1="165" y1="72" x2="60" y2="72" stroke="#b71c1c" stroke-width="2" marker-end="url(#fq1)"/> <text x="20" y="60" fill="#b71c1c" font-weight="bold">dequeue()</text> <line x1="540" y1="72" x2="418" y2="72" stroke="#2e7d32" stroke-width="2" marker-end="url(#fq1)"/> <text x="470" y="60" fill="#2e7d32" font-weight="bold">enqueue('Diego')</text> </svg><figcaption>Figura 1. Una cola: se entra por el final y se sale por el frente</figcaption></figure>
+<table><thead><tr><th>Operación</th><th>Qué hace</th><th>En SplQueue</th><th>Coste</th></tr></thead><tbody><tr><td><em>enqueue</em></td><td>Añadir al final</td><td><code>enqueue($x)</code>, <code>push($x)</code> o <code>$cola[] = $x</code></td><td>O(1)</td></tr><tr><td><em>dequeue</em></td><td>Sacar el del frente y devolverlo</td><td><code>dequeue()</code> (o <code>shift()</code>)</td><td>O(1)</td></tr><tr><td><em>front</em> / <em>peek</em></td><td>Ver el del frente sin sacarlo</td><td><code>bottom()</code></td><td>O(1)</td></tr><tr><td><em>back</em></td><td>Ver el último que llegó</td><td><code>top()</code></td><td>O(1)</td></tr><tr><td><em>isEmpty</em>, <em>size</em></td><td>¿Vacía? / número de elementos</td><td><code>isEmpty()</code>, <code>count($cola)</code></td><td>O(1)</td></tr></tbody></table>
+<h2>2.- La clase SplQueue</h2>
+<p><code>SplQueue</code> hereda de <code>SplDoublyLinkedList</code> con el modo de recorrido fijado en FIFO.</p>
+<pre><code>&lt;?php
+$impresora = new SplQueue();
+$impresora-&gt;enqueue('matricula-ana.pdf');
+$impresora-&gt;enqueue('notas-1DAW.pdf');
+$impresora[] = 'horario.pdf';                 // también añade al final
+
+echo $impresora-&gt;dequeue();                   // "matricula-ana.pdf" (el primero que llegó)
+echo $impresora-&gt;bottom();                    // "notas-1DAW.pdf": el siguiente
+echo count($impresora);                       // 2
+
+while (!$impresora-&gt;isEmpty()) {              // la forma habitual de vaciar una cola
+    imprimir($impresora-&gt;dequeue());
+}</code></pre>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p><strong>Nombres confusos.</strong> Como <code>SplQueue</code> es una lista en la que se mete por "arriba", <code>bottom()</code> es el <strong>frente</strong> (el siguiente en salir) y <code>top()</code> es el <strong>final</strong> (el último que llegó). Y, como en la pila, con la cola vacía <code>dequeue()</code>, <code>bottom()</code> y <code>top()</code> lanzan <code>RuntimeException</code>.</p>
+</div>
+<p><strong>Recorrer.</strong> <code>foreach</code> va del frente al final sin sacar a nadie (claves 0, 1, 2...), y <code>$cola[0]</code> es el frente. Con <code>setIteratorMode(SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_DELETE)</code>, <code>foreach</code> va sacando cada elemento. El sentido FIFO no se puede cambiar.</p>
+<h2>3.- ¿Por qué no un array?</h2>
+<p>Con un array, añadir al final (<code>$a[] = $x</code>) es rápido, pero <strong>sacar el primero con <code>array_shift()</code> es O(n)</strong>: PHP tiene que renumerar todos los demás elementos. Con muchos elementos la diferencia es enorme: en el ejemplo <code>e01-SplQueue.php</code>, vaciar una cola de 20 000 elementos tarda unos 150 ms con <code>array_shift</code> y menos de 1 ms con <code>SplQueue::dequeue()</code>.</p>
+<div class="caja recomendacion"><div class="titulo-caja">Recomendación</div>
+<p>Si vas a sacar elementos por el principio de una colección grande de forma repetida, no uses <code>array_shift</code>: usa <code>SplQueue</code> (o un índice que avance por el array sin borrar nada).</p>
+</div>
+<h2>4.- Aplicaciones típicas</h2>
+<table><thead><tr><th>Problema</th><th>Por qué una cola</th></tr></thead><tbody><tr><td>Trabajos pendientes (correos, imágenes que redimensionar, pedidos)</td><td>Se atienden en el orden de llegada; los que fallan pueden volver al final</td></tr><tr><td>Colas de impresión, turnos de atención</td><td>Primero en llegar, primero en ser atendido</td></tr><tr><td>Planificación de procesos (<em>round-robin</em>)</td><td>Cada proceso trabaja un poco y vuelve al final</td></tr><tr><td>Búsqueda en anchura (BFS): camino más corto, grados de separación en una red social</td><td>Se exploran primero los vecinos más cercanos</td></tr><tr><td>Buffers ("los N últimos mensajes"), medias móviles</td><td>Al llegar uno nuevo sale el más antiguo</td></tr></tbody></table>
+<p><strong>La búsqueda en anchura</strong> es la aplicación más importante: al usar una cola, se visitan primero todas las casillas (o personas) a distancia 1, luego las de distancia 2... por lo que la primera vez que se llega al destino, el camino es el <strong>más corto</strong>. Con una pila, en cambio, se encontraría un camino cualquiera.</p>
+<pre><code>&lt;?php
+function distanciaMinima(array $mapa, array $inicio): ?int     // '#' = muro, 'C' = cliente
+{
+    $cola = new SplQueue();
+    $cola-&gt;enqueue([...$inicio, 0]);                           // fila, columna, distancia
+    $visitadas = [implode(',', $inicio) =&gt; true];
+    while (!$cola-&gt;isEmpty()) {
+        [$f, $c, $d] = $cola-&gt;dequeue();
+        if ($mapa[$f][$c] === 'C') {
+            return $d;
+        }
+        foreach ([[0, 1], [1, 0], [0, -1], [-1, 0]] as [$df, $dc]) {
+            [$nf, $nc] = [$f + $df, $c + $dc];
+            if ($nf &gt;= 0 &amp;&amp; $nc &gt;= 0 &amp;&amp; isset($mapa[$nf][$nc]) &amp;&amp; $mapa[$nf][$nc] !== '#' &amp;&amp; !isset($visitadas["$nf,$nc"])) {
+                $visitadas["$nf,$nc"] = true;
+                $cola-&gt;enqueue([$nf, $nc, $d + 1]);
+            }
+        }
+    }
+    return null;                                               // no hay camino
+}</code></pre>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p>Fíjate en <code>$nc &gt;= 0</code>: en PHP, <code>$texto[-1]</code> es el <strong>último</strong> carácter de un string (y <code>$array[-1]</code> puede existir), así que sin esa comprobación el recorrido "atravesaría" el borde del mapa. Es un error muy habitual al trabajar con cuadrículas.</p>
+</div>
+<h2>5.- Ejercicio resuelto: cola de envío con reintentos</h2>
+<div class="caja resuelto"><div class="titulo-caja">Ejercicio resuelto</div>
+<p>La tienda guarda en una cola los correos que hay que enviar. Si un envío falla, el correo vuelve al final para reintentarlo, como mucho 3 veces.</p>
+<pre><code>&lt;?php
+$correos = new SplQueue();
+foreach (['ana@example.com', 'brais@caido.test', 'carmen@example.com'] as $destino) {
+    $correos-&gt;enqueue(['para' =&gt; $destino, 'intentos' =&gt; 0]);
+}
+$registro = [];
+while (!$correos-&gt;isEmpty()) {
+    $trabajo = $correos-&gt;dequeue();
+    $trabajo['intentos']++;
+    $ok = !str_ends_with($trabajo['para'], '.test');     // simulación: .test siempre falla
+    if ($ok) {
+        $registro[] = "enviado a {$trabajo['para']} (intento {$trabajo['intentos']})";
+    } elseif ($trabajo['intentos'] &lt; 3) {
+        $correos-&gt;enqueue($trabajo);                      // al final: se reintentará después
+        $registro[] = "fallo con {$trabajo['para']}, se reintentará";
+    } else {
+        $registro[] = "descartado {$trabajo['para']} tras 3 intentos";
+    }
+}
+print_r($registro);
+// enviado a ana / fallo con brais / enviado a carmen / fallo con brais / descartado brais tras 3 intentos</code></pre>
+<p>Observa que el correo que falla no bloquea a los demás: vuelve al final y, mientras tanto, se envía el de Carmen. Así funcionan los sistemas de colas profesionales (RabbitMQ, Redis, las <em>jobs</em> de Laravel), aunque allí la cola se guarda fuera de PHP para que sobreviva entre peticiones.</p>
+</div>
+<div class="caja autoeval"><div class="titulo-caja">Autoevaluación</div>
+<ul><li>Se encolan 'a', 'b' y 'c' y se hace <code>dequeue()</code>. ¿Qué se obtiene? <strong>"a": el primero en entrar.</strong>
+</li><li>En una <code>SplQueue</code>, ¿qué devuelve <code>bottom()</code>? <strong>El frente: el siguiente que saldrá.</strong>
+</li><li>¿Por qué <code>array_shift</code> no es buena idea para una cola grande? <strong>Porque es O(n): renumera todos los elementos cada vez.</strong>
+</li><li>¿Por qué la búsqueda en anchura encuentra el camino más corto? <strong>Porque la cola hace que se visiten todos los puntos a distancia d antes que los de distancia d + 1.</strong>
+</li></ul>
+</div>
+<h2>6.- Ejercicios</h2>
+<table><thead><tr><th>Fichero</th><th>Contenido</th></tr></thead><tbody><tr><td><code>Ejercicios Queue/e01-SplQueue.php</code></td><td>La API: <code>enqueue</code>, <code>dequeue</code>, <code>bottom</code>, <code>top</code>, cola vacía, <code>foreach</code>, <code>IT_MODE_DELETE</code>, <code>array_shift</code> frente a <code>dequeue</code></td></tr><tr><td><code>Ejercicios Queue/e02-SplQueue.php</code></td><td>Aplicaciones: cola con reintentos, <em>round-robin</em>, camino más corto (BFS), últimos N mensajes</td></tr><tr><td><code>Ejercicios Queue/problemas/</code></td><td><code>e01</code> y <code>e02</code>: problemas y soluciones</td></tr></tbody></table>
+<div class="pie">Material elaborado para el módulo MP0613. Ejemplos probados con PHP 8.2.</div>
+</body></html>

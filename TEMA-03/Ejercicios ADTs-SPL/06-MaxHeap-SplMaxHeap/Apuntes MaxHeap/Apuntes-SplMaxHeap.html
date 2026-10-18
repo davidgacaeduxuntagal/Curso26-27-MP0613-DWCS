@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El montículo máximo (Max-heap): SplMaxHeap</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+:root { --verde: #c6efa0; --verde-borde: #7cb342; --azul: #dbe9fb; --azul-borde: #5b8fd6; --amarillo: #fff6c4;
+        --amarillo-borde: #d9b200; --naranja: #ffe2c4; --naranja-borde: #e08a2e; --gris: #f1f1f1; --morado: #ece2fb; --morado-borde: #8e6bd1; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; max-width: 820px; margin: 0 auto; padding: 0 12px; background: #fff; }
+.cabecera > span { flex: 1; } .cabecera > span:last-child { text-align: right; } .cabecera .centro { flex: 2; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #999; padding: 6px 0; margin-bottom: 14px; font-size: 9pt; }
+.cabecera .centro { text-align: center; color: #5a4fcf; font-weight: bold; font-style: italic; }
+h1 { font-size: 17pt; color: #3c3c8c; border-bottom: 3px solid #b39ddb; padding-bottom: 4px; }
+h2 { font-size: 13.5pt; background: #c9b8f0; padding: 4px 8px; margin-top: 26px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #3c3c8c; margin-top: 18px; page-break-after: avoid; }
+ul { margin: 4px 0 8px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; color: #6a1b9a; background: #f6f2fb; padding: 0 2px; }
+pre { background: #f7f7f9; border: 1px solid #ddd; border-left: 4px solid #8e6bd1; padding: 8px 10px; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { color: #222; background: none; padding: 0; font-size: 9pt; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: #e8e1f7; } th, td { border: 1px solid #aaa; padding: 4px 6px; text-align: left; vertical-align: top; }
+.caja { border: 1px solid #888; border-radius: 2px; padding: 4px 12px 6px; margin: 12px 0; page-break-inside: avoid; }
+.titulo-caja { font-weight: bold; margin: 4px 0 2px; }
+.caso { background: var(--verde); border-color: var(--verde-borde); }
+.debes { background: var(--azul); border-color: var(--azul-borde); }
+.saber { background: var(--amarillo); border-color: var(--amarillo-borde); }
+.recomendacion { background: var(--naranja); border-color: var(--naranja-borde); }
+.resuelto { background: var(--gris); }
+.resuelto { page-break-inside: auto; }
+.resuelto pre { background: #fff; page-break-inside: auto; }
+.autoeval { background: var(--morado); border-color: var(--morado-borde); }
+figure { margin: 12px 0; text-align: center; page-break-inside: avoid; }
+figure svg, figure img { max-width: 100%; height: auto; }
+figure img { border: 1px solid #ccc; }
+figcaption { font-size: 9pt; color: #555; font-style: italic; margin-top: 4px; }
+.pie { margin-top: 30px; border-top: 1px dashed #999; font-size: 8.5pt; color: #666; text-align: center; padding-top: 6px; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style></head><body>
+<div class="cabecera"><span>CFGS Desarrollo de Aplicaciones Web</span>
+<span class="centro">Módulo Profesional MP0613 — Desarrollo web en entorno servidor<br>ADTs CON LA SPL: EL MONTÍCULO MÁXIMO (SplMaxHeap)</span>
+<span>IES de Rodeira</span></div>
+<h1>El montículo máximo (Max-heap): SplMaxHeap</h1>
+<div class="caja caso"><div class="titulo-caja">Caso práctico</div>
+<p>La tienda de <strong>BK Programación</strong> organiza una <strong>subasta online</strong> de productos reacondicionados. Cada segundo llegan pujas y la página debe mostrar siempre la <strong>más alta</strong>. Además, el comparador de envíos tiene que encontrar las <strong>3 tarifas más baratas</strong> entre cientos de transportistas. <strong>María</strong> le explica a <strong>Carlos</strong> que el primer problema se resuelve con un <strong>montículo máximo</strong>... y el segundo, curiosamente, también.</p>
+</div>
+<h2>1.- Qué es un montículo máximo</h2>
+<p>Un <strong>montículo máximo</strong> es un árbol binario casi completo en el que cada nodo es <strong>mayor o igual que sus hijos</strong>: el <strong>máximo está siempre en la raíz</strong>. Es el simétrico del montículo mínimo, con los mismos costes:</p>
+<table><thead><tr><th>Operación</th><th>En SplMaxHeap</th><th>Coste</th></tr></thead><tbody><tr><td>Añadir</td><td><code>insert($x)</code></td><td>O(log n)</td></tr><tr><td>Sacar el máximo</td><td><code>extract()</code></td><td>O(log n)</td></tr><tr><td>Ver el máximo</td><td><code>top()</code></td><td>O(1)</td></tr><tr><td>Tamaño / ¿vacío?</td><td><code>count($h)</code> / <code>isEmpty()</code></td><td>O(1)</td></tr></tbody></table>
+<figure><svg viewBox="0 0 420 160" width="420" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif" font-size="13"> <g stroke="#888"><line x1="210" y1="30" x2="130" y2="80"/><line x1="210" y1="30" x2="290" y2="80"/><line x1="130" y1="80" x2="85" y2="130"/><line x1="130" y1="80" x2="175" y2="130"/><line x1="290" y1="80" x2="245" y2="130"/></g> <g fill="#dbe9fb" stroke="#5b8fd6" stroke-width="1.5"><circle cx="210" cy="30" r="20" fill="#ffe2c4" stroke="#e08a2e"/><circle cx="130" cy="80" r="20"/><circle cx="290" cy="80" r="20"/><circle cx="85" cy="130" r="20"/><circle cx="175" cy="130" r="20"/><circle cx="245" cy="130" r="20"/></g> <g text-anchor="middle"><text x="210" y="35">180</text><text x="130" y="85">175</text><text x="290" y="85">150</text><text x="85" y="135">120</text><text x="175" y="135">135</text><text x="245" y="135">90</text></g> <text x="238" y="25" fill="#e08a2e" font-weight="bold" font-size="12">top(): la puja más alta</text> </svg><figcaption>Figura 1. Un montículo máximo: cada padre es mayor o igual que sus hijos</figcaption></figure>
+<h2>2.- La clase SplMaxHeap</h2>
+<pre><code>&lt;?php
+$pujas = new SplMaxHeap();
+foreach ([120, 150, 135, 180, 175] as $puja) {
+    $pujas-&gt;insert($puja);
+    echo "La puja más alta es {$pujas-&gt;top()} €", PHP_EOL;   // 120, 150, 150, 180, 180
+}
+echo $pujas-&gt;extract();         // 180: gana la subasta
+echo $pujas-&gt;top();             // 175</code></pre>
+<p>Funciona exactamente igual que <code>SplMinHeap</code> (las dos heredan de <code>SplHeap</code>): mismos métodos, <code>RuntimeException</code> si está vacío, y <strong><code>foreach</code> lo vacía</strong>. El recorrido manual muestra por qué: <code>current()</code> es lo mismo que <code>top()</code> y <code>next()</code> <strong>extrae</strong> la raíz.</p>
+<p><strong>Desempates.</strong> Para ordenar por un valor y desempatar, se insertan arrays: <code>[puntos, -orden, nombre]</code> saca primero los más puntos y, a igual puntuación, el que se presentó antes.</p>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p><code>SplMaxHeap</code>, <code>SplPriorityQueue</code> y un <code>SplMinHeap</code> con los valores negados resuelven el mismo problema ("dame siempre el mayor"). Elige <code>SplPriorityQueue</code> cuando el dato y su prioridad son cosas distintas (una tarea y su urgencia), y un montículo cuando el propio valor (o un array <code>[valor, dato]</code>) decide el orden.</p>
+</div>
+<h2>3.- Aplicaciones típicas</h2>
+<table><thead><tr><th>Problema</th><th>Cómo</th></tr></thead><tbody><tr><td>El máximo de un flujo de datos (puja más alta, mejor puntuación)</td><td><code>top()</code> siempre da el mayor</td></tr><tr><td><strong>Los K menores</strong> (los vuelos más baratos, los hoteles más cercanos)</td><td>Un max-heap de tamaño K: su raíz es el peor de los K mejores</td></tr><tr><td>Rankings y podios</td><td><code>[puntos, -orden, nombre]</code> y extraer los primeros</td></tr><tr><td><strong>La mediana en tiempo real</strong></td><td>Un max-heap con la mitad inferior y un min-heap con la superior</td></tr><tr><td>Planificar empezando por el trabajo más largo (LPT)</td><td>Max-heap de trabajos + min-heap de máquinas</td></tr></tbody></table>
+<p><strong>La mediana con dos montículos</strong> es un clásico: la mitad inferior de los datos va en un montículo <strong>máximo</strong> (su raíz es el mayor de los pequeños) y la mitad superior en uno <strong>mínimo</strong> (su raíz es el menor de los grandes). Si se mantienen equilibrados, la mediana está siempre en las raíces, y cada dato nuevo cuesta O(log n). A diferencia de la media, la mediana no se deja engañar por un valor extremo (un ático de 3200 € entre pisos de 700 €).</p>
+<h2>4.- Ejercicio resuelto: la mediana de los alquileres</h2>
+<div class="caja resuelto"><div class="titulo-caja">Ejercicio resuelto</div>
+<p>Una web de alquileres muestra el precio <strong>mediano</strong> de los pisos a medida que se publican anuncios.</p>
+<pre><code>&lt;?php
+final class Mediana
+{
+    private SplMaxHeap $inferior;           // la mitad pequeña: su top() es el mayor de ellos
+    private SplMinHeap $superior;           // la mitad grande: su top() es el menor de ellos
+
+    public function __construct()
+    {
+        $this-&gt;inferior = new SplMaxHeap();
+        $this-&gt;superior = new SplMinHeap();
+    }
+
+    public function anadir(float $x): void
+    {
+        if ($this-&gt;inferior-&gt;isEmpty() || $x &lt;= $this-&gt;inferior-&gt;top()) {
+            $this-&gt;inferior-&gt;insert($x);
+        } else {
+            $this-&gt;superior-&gt;insert($x);
+        }
+        if (count($this-&gt;inferior) &gt; count($this-&gt;superior) + 1) {      // reequilibrar
+            $this-&gt;superior-&gt;insert($this-&gt;inferior-&gt;extract());
+        } elseif (count($this-&gt;superior) &gt; count($this-&gt;inferior)) {
+            $this-&gt;inferior-&gt;insert($this-&gt;superior-&gt;extract());
+        }
+    }
+
+    public function valor(): float
+    {
+        return count($this-&gt;inferior) &gt; count($this-&gt;superior)
+            ? $this-&gt;inferior-&gt;top()                                       // número impar de datos
+            : ($this-&gt;inferior-&gt;top() + $this-&gt;superior-&gt;top()) / 2;       // número par
+    }
+}
+$mediana = new Mediana();
+foreach ([650, 720, 590, 3200, 700, 680] as $alquiler) {
+    $mediana-&gt;anadir($alquiler);
+    echo "$alquiler -&gt; mediana {$mediana-&gt;valor()}", PHP_EOL;
+}
+// 650 -&gt; 650, 720 -&gt; 685, 590 -&gt; 650, 3200 -&gt; 685, 700 -&gt; 700, 680 -&gt; 690
+// (la media sería 1090 €: el ático la dispara)</code></pre>
+</div>
+<div class="caja autoeval"><div class="titulo-caja">Autoevaluación</div>
+<ul><li>¿Qué devuelve <code>top()</code> en un <code>SplMaxHeap</code> con 4, 9 y 2? <strong>9.</strong>
+</li><li>¿Qué tipo de montículo usarías para quedarte con los 5 precios más baratos de un flujo? <strong>Uno máximo de tamaño 5.</strong>
+</li><li>En la mediana con dos montículos, ¿qué tipo de montículo guarda la mitad inferior? <strong>Uno máximo.</strong>
+</li><li>¿Por qué <code>next()</code> en un <code>SplMaxHeap</code> hace que disminuya <code>count()</code>? <strong>Porque extrae la raíz.</strong>
+</li></ul>
+</div>
+<h2>5.- Ejercicios</h2>
+<table><thead><tr><th>Fichero</th><th>Contenido</th></tr></thead><tbody><tr><td><code>Ejercicios MaxHeap/e01-SplMaxHeap.php</code></td><td>La API: <code>insert</code>, <code>top</code>, <code>extract</code>, <code>valid</code> / <code>current</code> / <code>next</code>, rankings con desempate, comparación con <code>SplMinHeap</code> y <code>SplPriorityQueue</code></td></tr><tr><td><code>Ejercicios MaxHeap/e02-SplMaxHeap.php</code></td><td>Aplicaciones: los K más baratos, la mediana en tiempo real, el trabajo más largo primero</td></tr><tr><td><code>Ejercicios MaxHeap/problemas/</code></td><td><code>e01</code> y <code>e02</code>: problemas y soluciones</td></tr></tbody></table>
+<div class="pie">Material elaborado para el módulo MP0613. Ejemplos probados con PHP 8.2.</div>
+</body></html>

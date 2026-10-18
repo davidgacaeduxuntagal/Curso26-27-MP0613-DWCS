@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El montículo personalizado (Custom heap): SplHeap</title><style>
+@page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+:root { --verde: #c6efa0; --verde-borde: #7cb342; --azul: #dbe9fb; --azul-borde: #5b8fd6; --amarillo: #fff6c4;
+        --amarillo-borde: #d9b200; --naranja: #ffe2c4; --naranja-borde: #e08a2e; --gris: #f1f1f1; --morado: #ece2fb; --morado-borde: #8e6bd1; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #222; max-width: 820px; margin: 0 auto; padding: 0 12px; background: #fff; }
+.cabecera > span { flex: 1; } .cabecera > span:last-child { text-align: right; } .cabecera .centro { flex: 2; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #999; padding: 6px 0; margin-bottom: 14px; font-size: 9pt; }
+.cabecera .centro { text-align: center; color: #5a4fcf; font-weight: bold; font-style: italic; }
+h1 { font-size: 17pt; color: #3c3c8c; border-bottom: 3px solid #b39ddb; padding-bottom: 4px; }
+h2 { font-size: 13.5pt; background: #c9b8f0; padding: 4px 8px; margin-top: 26px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; color: #3c3c8c; margin-top: 18px; page-break-after: avoid; }
+ul { margin: 4px 0 8px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; color: #6a1b9a; background: #f6f2fb; padding: 0 2px; }
+pre { background: #f7f7f9; border: 1px solid #ddd; border-left: 4px solid #8e6bd1; padding: 8px 10px; overflow-x: auto; page-break-inside: avoid; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { color: #222; background: none; padding: 0; font-size: 9pt; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.5pt; page-break-inside: avoid; }
+th { background: #e8e1f7; } th, td { border: 1px solid #aaa; padding: 4px 6px; text-align: left; vertical-align: top; }
+.caja { border: 1px solid #888; border-radius: 2px; padding: 4px 12px 6px; margin: 12px 0; page-break-inside: avoid; }
+.titulo-caja { font-weight: bold; margin: 4px 0 2px; }
+.caso { background: var(--verde); border-color: var(--verde-borde); }
+.debes { background: var(--azul); border-color: var(--azul-borde); }
+.saber { background: var(--amarillo); border-color: var(--amarillo-borde); }
+.recomendacion { background: var(--naranja); border-color: var(--naranja-borde); }
+.resuelto { background: var(--gris); }
+.resuelto { page-break-inside: auto; }
+.resuelto pre { background: #fff; page-break-inside: auto; }
+.autoeval { background: var(--morado); border-color: var(--morado-borde); }
+figure { margin: 12px 0; text-align: center; page-break-inside: avoid; }
+figure svg, figure img { max-width: 100%; height: auto; }
+figure img { border: 1px solid #ccc; }
+figcaption { font-size: 9pt; color: #555; font-style: italic; margin-top: 4px; }
+.pie { margin-top: 30px; border-top: 1px dashed #999; font-size: 8.5pt; color: #666; text-align: center; padding-top: 6px; }
+@media print { body { max-width: none; } a { color: inherit; text-decoration: none; } }
+</style></head><body>
+<div class="cabecera"><span>CFGS Desarrollo de Aplicaciones Web</span>
+<span class="centro">Módulo Profesional MP0613 — Desarrollo web en entorno servidor<br>ADTs CON LA SPL: EL MONTÍCULO PERSONALIZADO (SplHeap)</span>
+<span>IES de Rodeira</span></div>
+<h1>El montículo personalizado (Custom heap): SplHeap</h1>
+<div class="caja caso"><div class="titulo-caja">Caso práctico</div>
+<p><strong>Carlos</strong> quiere usar un montículo para ordenar los pedidos de la tienda, pero sus pedidos son <strong>objetos</strong> con número, fecha de entrega e importe, y el orden que necesita es "primero la fecha más próxima y, a igual fecha, el de mayor importe". Ni <code>SplMinHeap</code> ni <code>SplMaxHeap</code> saben hacer eso. <strong>Juan</strong> le explica que las dos heredan de una clase <strong>abstracta</strong>, <code>SplHeap</code>, y que él puede crear la suya con <strong>su propio criterio</strong>.</p>
+</div>
+<h2>1.- SplHeap: una clase abstracta</h2>
+<p><code>SplHeap</code> es la clase <strong>abstracta</strong> de la que heredan <code>SplMinHeap</code> y <code>SplMaxHeap</code>. Tiene todo el funcionamiento del montículo (<code>insert</code>, <code>extract</code>, <code>top</code>, <code>count</code>, <code>isEmpty</code>, el recorrido...) salvo <strong>cómo se comparan dos elementos</strong>, que es un método abstracto:</p>
+<pre><code>abstract protected function compare(mixed $value1, mixed $value2): int;</code></pre>
+<div class="caja debes"><div class="titulo-caja">Debes conocer</div>
+<p><strong>La regla de <code>compare($a, $b)</code></strong>: debe devolver un número <strong>positivo si <code>$a</code> debe estar más arriba</strong> (salir antes) que <code>$b</code>, <strong>0</strong> si son equivalentes y <strong>negativo</strong> en otro caso. Con el operador <code>&lt;=&gt;</code>:</p>
+<ul><li><code>return $a &lt;=&gt; $b;</code> → sale primero el <strong>mayor</strong> (como <code>SplMaxHeap</code>),
+</li><li><code>return $b &lt;=&gt; $a;</code> → sale primero el <strong>menor</strong> (como <code>SplMinHeap</code>).
+</li></ul>
+<p>Si te equivocas de orden, el montículo funciona... pero al revés. Pon un punto de ruptura dentro de <code>compare()</code> para ver qué compara.</p>
+</div>
+<h2>2.- Crear un montículo propio</h2>
+<pre><code>&lt;?php
+final class Pedido
+{
+    public function __construct(
+        public readonly int $numero,
+        public readonly string $entrega,     // "Y-m-d"
+        public readonly float $importe,
+    ) {
+    }
+}
+
+final class ColaPedidos extends SplHeap
+{
+    protected function compare(mixed $a, mixed $b): int
+    {
+        // 1.º la fecha MÁS PRÓXIMA ($b delante); 2.º el importe MAYOR ($a delante)
+        return [$b-&gt;entrega, $a-&gt;importe] &lt;=&gt; [$a-&gt;entrega, $b-&gt;importe];
+    }
+}
+$pedidos = new ColaPedidos();
+$pedidos-&gt;insert(new Pedido(1001, '2026-10-20', 45.90));
+$pedidos-&gt;insert(new Pedido(1002, '2026-10-18', 12.50));
+$pedidos-&gt;insert(new Pedido(1004, '2026-10-18', 89.99));
+echo $pedidos-&gt;top()-&gt;numero;        // 1004: el 18/10 y de más importe</code></pre>
+<p><strong>Criterios con varios niveles.</strong> Comparar <strong>arrays</strong> con <code>&lt;=&gt;</code> compara elemento a elemento, así que <code>[criterio1, criterio2, ...]</code> resuelve los desempates. En cada posición, pon <code>$a</code> a la izquierda si quieres el <strong>mayor</strong> primero y <code>$b</code> si quieres el <strong>menor</strong>.</p>
+<p><strong>Otras formas:</strong></p>
+<ul><li>Heredar de <strong><code>SplMinHeap</code></strong> o <strong><code>SplMaxHeap</code></strong> y redefinir <code>compare()</code> (se mantiene el sentido, pero cambia el criterio). Por ejemplo, para ordenar nombres en español sin que las mayúsculas y las tildes estropeen el orden, se compara con un <code>Collator('es_ES')</code> de la extensión intl.
+</li><li>Pasar la función de comparación al construir el montículo (una <em>closure</em>), para tener una sola clase con cualquier criterio:
+</li></ul>
+<pre><code>&lt;?php
+final class HeapConComparador extends SplHeap
+{
+    public function __construct(private Closure $comparador)
+    {
+    }
+
+    protected function compare(mixed $a, mixed $b): int
+    {
+        return ($this-&gt;comparador)($a, $b);
+    }
+}
+$masBarato = new HeapConComparador(fn($a, $b) =&gt; $b['precio'] &lt;=&gt; $a['precio']);</code></pre>
+<h2>3.- Montículos corruptos</h2>
+<p>Si <code>compare()</code> <strong>lanza una excepción</strong> mientras se inserta o extrae un elemento (por ejemplo, porque un pedido no tiene fecha), el montículo puede quedar a medio reordenar. PHP lo marca como <strong>corrupto</strong>:</p>
+<ul><li><code>isCorrupted()</code> devuelve <code>true</code>,
+</li><li>cualquier operación posterior lanza <code>RuntimeException: Heap is corrupted, heap properties are no longer ensured</code>,
+</li><li><code>recoverFromCorruption()</code> quita la marca, pero <strong>el orden ya no está garantizado</strong> (y el elemento erróneo puede haberse quedado dentro).
+</li></ul>
+<div class="caja recomendacion"><div class="titulo-caja">Recomendación</div>
+<p>Valida los datos <strong>antes</strong> de que lleguen a <code>compare()</code>: redefine <code>insert()</code> para comprobar el tipo o los campos y lanzar la excepción allí. Así el error es claro y el montículo nunca se corrompe.</p>
+<pre><code>&lt;?php
+final class ColaTareasSegura extends SplHeap
+{
+    public function insert(mixed $valor): true
+    {
+        if (!$valor instanceof Tarea) {
+            throw new TypeError('Solo se admiten objetos Tarea, no ' . get_debug_type($valor));
+        }
+        return parent::insert($valor);
+    }
+
+    protected function compare(mixed $a, mixed $b): int
+    {
+        return $a-&gt;prioridad-&gt;value &lt;=&gt; $b-&gt;prioridad-&gt;value;
+    }
+}</code></pre>
+</div>
+<h2>4.- Aplicaciones típicas</h2>
+<table><thead><tr><th>Problema</th><th>Criterio de <code>compare()</code></th></tr></thead><tbody><tr><td>Pedidos, tareas, incidencias con varios criterios</td><td><code>[prioridad, plazo, duración]</code> en el orden adecuado</td></tr><tr><td>Rankings con una puntuación calculada</td><td>La puntuación (por ejemplo, estrellas ponderadas por el número de votos)</td></tr><tr><td>Ordenar textos según el idioma</td><td><code>Collator::compare()</code></td></tr><tr><td>Planificar ascensores, robots, rutas</td><td>La urgencia y la distancia</td></tr><tr><td>Un "montículo con tipo"</td><td>El criterio, más una comprobación en <code>insert()</code></td></tr></tbody></table>
+<h2>5.- Ejercicio resuelto: el gestor de tareas del equipo</h2>
+<div class="caja resuelto"><div class="titulo-caja">Ejercicio resuelto</div>
+<p>El equipo de desarrollo trabaja primero en las tareas de <strong>mayor prioridad</strong>; a igual prioridad, en la que <strong>vence antes</strong>; y si también coinciden, en la <strong>más corta</strong>.</p>
+<pre><code>&lt;?php
+enum Prioridad: int
+{
+    case Baja = 1;
+    case Media = 2;
+    case Alta = 3;
+}
+final class Tarea
+{
+    public function __construct(
+        public readonly string $titulo,
+        public readonly Prioridad $prioridad,
+        public readonly DateTimeImmutable $plazo,
+        public readonly int $horas,
+    ) {
+    }
+}
+final class ColaTareas extends SplHeap
+{
+    protected function compare(mixed $a, mixed $b): int
+    {
+        return [$a-&gt;prioridad-&gt;value, $b-&gt;plazo, $b-&gt;horas]    // prioridad MAYOR, plazo MENOR, horas MENOS
+           &lt;=&gt; [$b-&gt;prioridad-&gt;value, $a-&gt;plazo, $a-&gt;horas];
+    }
+}
+$tareas = new ColaTareas();
+$tareas-&gt;insert(new Tarea('Actualizar dependencias', Prioridad::Media, new DateTimeImmutable('2026-10-30'), 2));
+$tareas-&gt;insert(new Tarea('Arreglar el pago con Bizum', Prioridad::Alta, new DateTimeImmutable('2026-10-17'), 5));
+$tareas-&gt;insert(new Tarea('Error en el carrito', Prioridad::Alta, new DateTimeImmutable('2026-10-17'), 3));
+$tareas-&gt;insert(new Tarea('Copia de seguridad', Prioridad::Alta, new DateTimeImmutable('2026-10-20'), 1));
+while (!$tareas-&gt;isEmpty()) {
+    echo $tareas-&gt;extract()-&gt;titulo, PHP_EOL;
+}
+// Error en el carrito / Arreglar el pago con Bizum / Copia de seguridad / Actualizar dependencias</code></pre>
+<p>Observa que los objetos <code>DateTimeImmutable</code> y los casos del enum (a través de su <code>value</code>) se pueden comparar directamente dentro del array.</p>
+</div>
+<div class="caja autoeval"><div class="titulo-caja">Autoevaluación</div>
+<ul><li>¿Se puede hacer <code>new SplHeap()</code>? <strong>No: es abstracta. Hay que heredar e implementar <code>compare()</code>.</strong>
+</li><li>En un <code>SplHeap</code> propio, ¿qué sale primero si <code>compare</code> es <code>return $a &lt;=&gt; $b;</code>? <strong>El mayor.</strong>
+</li><li>¿Qué ocurre si <code>compare()</code> lanza una excepción durante una inserción? <strong>El montículo queda corrupto y las siguientes operaciones lanzan <code>RuntimeException</code>.</strong>
+</li><li>¿Cómo evitarías que se corrompa? <strong>Validando los datos en un <code>insert()</code> redefinido, antes de llamar a <code>parent::insert()</code>.</strong>
+</li></ul>
+</div>
+<h2>6.- Ejercicios</h2>
+<table><thead><tr><th>Fichero</th><th>Contenido</th></tr></thead><tbody><tr><td><code>Ejercicios CustomHeap/e01-SplHeap.php</code></td><td>Montículo de objetos, heredar de <code>SplMinHeap</code> con <code>Collator</code>, comparador como parámetro, montículos corruptos</td></tr><tr><td><code>Ejercicios CustomHeap/e02-SplHeap.php</code></td><td>Aplicaciones: gestor de tareas, ranking ponderado (top K), montículo con tipo</td></tr><tr><td><code>Ejercicios CustomHeap/problemas/</code></td><td><code>e01</code> y <code>e02</code>: problemas y soluciones</td></tr></tbody></table>
+<div class="pie">Material elaborado para el módulo MP0613. Ejemplos probados con PHP 8.2.</div>
+</body></html>
