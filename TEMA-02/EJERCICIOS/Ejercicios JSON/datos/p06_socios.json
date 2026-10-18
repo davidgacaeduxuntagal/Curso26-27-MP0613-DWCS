@@ -1,0 +1,20 @@
+[
+    {
+        "numero": 1,
+        "nombre": "Ana Pérez",
+        "cuota": 30,
+        "activo": true
+    },
+    {
+        "numero": 2,
+        "nombre": "Brais Otero",
+        "cuota": 25.5,
+        "activo": false
+    },
+    {
+        "numero": 3,
+        "nombre": "Carmen Núñez",
+        "cuota": 30,
+        "activo": true
+    }
+]

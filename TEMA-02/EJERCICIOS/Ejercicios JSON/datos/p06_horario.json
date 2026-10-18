@@ -1,0 +1,9 @@
+{
+    "lunes": "cerrado",
+    "martes": "09:00-23:00",
+    "miercoles": "09:00-23:00",
+    "jueves": "9-23",
+    "viernes": "09:00-02:00",
+    "sabado": "10:00-02:00",
+    "festivos": "cerrado"
+}

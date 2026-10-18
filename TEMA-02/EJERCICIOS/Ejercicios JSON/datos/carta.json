@@ -1,0 +1,26 @@
+[
+    {
+        "id": 2,
+        "nombre": "Tortilla",
+        "categoria": "tapas",
+        "precio": 9.5
+    },
+    {
+        "id": 3,
+        "nombre": "Filloas",
+        "categoria": "postres",
+        "precio": 4.5
+    },
+    {
+        "id": 4,
+        "nombre": "Empanada de zamburiñas",
+        "categoria": "tapas",
+        "precio": 8
+    },
+    {
+        "id": 5,
+        "nombre": "Tarta de Santiago",
+        "categoria": "postres",
+        "precio": 5
+    }
+]

@@ -1,0 +1,12 @@
+[
+    {
+        "id": 1,
+        "nombre": "Proveedor de pan",
+        "telefono": "981000999"
+    },
+    {
+        "id": 3,
+        "nombre": "Técnico cafetera",
+        "telefono": "600111222"
+    }
+]

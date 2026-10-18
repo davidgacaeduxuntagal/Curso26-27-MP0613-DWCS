@@ -1,0 +1,5 @@
+[
+    {"id": 1, "nombre": "Pulpo", "categoria": "tapas", "precio": 12.5},
+    {"id": 2, "nombre": "Tortilla", "categoria": "tapas", "precio": "doce"},
+    {"id": 3, "categoria": "postres", "precio": 4.5}
+]

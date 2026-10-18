@@ -1,0 +1,51 @@
+TORNEO DE FUTBOLÍN — EJEMPLOS DE ENTRADAS Y SALIDAS (casos de prueba)
+=====================================================================
+Se escriben ANTES de programar. Después se usan para probar cada paso.
+
+CASO 1: inscripción correcta
+  Entrada (POST):
+    equipo    = "Los Pulpos"
+    jugador1  = "Ana Pérez"
+    jugador2  = "Brais Otero"
+    email     = "ana@example.com"
+    telefono  = "600 123 456"
+    categoria = "mixta"
+  Salida esperada:
+    - Se guarda el equipo en datos/equipos.json (teléfono sin espacios: "600123456")
+    - Redirección a index.php?ok=1 y mensaje "Inscripción guardada. ¡Mucha suerte, Los Pulpos!"
+    - El equipo aparece en la lista; plazas libres: 15
+
+CASO 2: campos vacíos
+  Entrada: todo vacío
+  Salida esperada: formulario de nuevo con 5 errores (el teléfono es opcional):
+    equipo    -> "Escribe el nombre del equipo"
+    jugador1  -> "Escribe el nombre del jugador"
+    jugador2  -> "Escribe el nombre del jugador"
+    email     -> "Escribe un correo electrónico"
+    categoria -> "Elige una categoría"
+
+CASO 3: datos incorrectos (se conservan los valores escritos)
+  Entrada:
+    equipo    = "LP"                 -> "Entre 3 y 30 caracteres"
+    jugador1  = "Ana"
+    jugador2  = "ana"                -> "Los dos jugadores deben ser distintos"
+    email     = "ana@"               -> "El correo no es válido"
+    telefono  = "12345"              -> "9 cifras, empezando por 6, 7, 8 o 9"
+    categoria = "veteranos"          -> "Elige una categoría"
+
+CASO 4: nombre de equipo repetido (mayúsculas/minúsculas no importan)
+  Entrada: equipo = "los pulpos" (ya existe "Los Pulpos")
+  Salida esperada: equipo -> "Ya hay un equipo con ese nombre"
+
+CASO 5: intento de XSS
+  Entrada: equipo = "<b>Hack</b>", jugador1 = "<script>alert(1)</script>"
+  Salida esperada: errores de formato; en el formulario se ve el texto tal cual
+  (&lt;b&gt;...), sin ejecutar nada.
+
+CASO 6: torneo completo
+  Situación: ya hay 16 equipos
+  Salida esperada: no aparece el formulario; mensaje "El torneo está completo";
+  si alguien envía el POST igualmente -> error "El torneo está completo".
+
+CASO 7: recargar la página después de inscribirse (F5)
+  Salida esperada: NO se vuelve a enviar el formulario (patrón POST/Redirect/GET).
