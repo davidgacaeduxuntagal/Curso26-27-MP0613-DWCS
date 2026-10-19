@@ -1,3 +1,9 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Patrón (B): salía de 9 a 0 asteriscos (con una línea vacía al final); el enunciado va de 10 a 1.
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -28,7 +34,7 @@
                  <label for="cajaTextoB">(B)<br>
                     <textarea id="cajaTextoB" name="textarea" rows="12" cols="15"><?php
                     for ($fila = 1; $fila <= $ancho; $fila++) {
-                        for ($columna = 1; $columna <= ($ancho - $fila); $columna++) {
+                        for ($columna = 1; $columna <= ($ancho - $fila + 1); $columna++) {   // CORREGIDO: era de 9 a 0 asteriscos
                             echo '*';
                         }
                         echo "\n";

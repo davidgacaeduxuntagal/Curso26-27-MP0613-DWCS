@@ -1,5 +1,12 @@
 <?php
 /*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - calcularFibonacciIterativa(0) devolvía 1 (la recursiva, 0).
+ * - Sin límite superior: la versión recursiva es exponencial y con 40 se agotaba el tiempo de ejecución
+ *   (Fatal error). Se limita a 30.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+/*
  *  Iterativa
  *
 */
@@ -15,7 +22,7 @@ function calcularFibonacciIterativa ($termino) {
         $i++;
     }
 
-    return $termino > 1 ? $fib2 : 1;
+    return $termino > 1 ? $fib2 : $termino;   // CORREGIDO: fib(0) es 0, no 1
 }
 
 /*
@@ -43,7 +50,7 @@ function calcularFibonacciRecursiva ($termino): int {
     <h1>Sucesión de Fibonacci:</h1>
     <img src="fibonacci.png" alt="Ëspiral de Fibonacci" />
 
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $termino    = empty($_GET['termino'])    ? "": intval($_GET['termino']);
     $primeraVez = empty($_GET['primeraVez']) ? "": $_GET['primeraVez'];
@@ -55,10 +62,10 @@ function calcularFibonacciRecursiva ($termino): int {
             <input type="number" id="termino" name="termino" value="{$termino}" />
         </p>
         <button id="botonEnviar" type="submit">Enviar</button>      
-        <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+        <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
 MARCA;
 
-if ( $termino === "" || (is_int($termino) && $termino < 1))  {
+if ( $termino === "" || $termino < 1 || $termino > 30 )  {   // CORREGIDO: la recursiva con 40 agotaba el tiempo
     if ( $primeraVez === "" ) {
         echo <<<PRIMERAVEZ
              <input type="hidden" name="primeraVez" value="false"/>
@@ -69,7 +76,7 @@ PRIMERAVEZ;
              <input type="hidden" name="primeraVez" value="false"/>
         </div>   
         <div>
-            <p id="salida" style="color: red">Por favor, introduzca un número entero mayor o igual a 1</p>
+            <p id="salida" style="color: red">Por favor, introduzca un número entero entre 1 y 30</p>
         </div> 
 SEGUNDAVEZ;
     }

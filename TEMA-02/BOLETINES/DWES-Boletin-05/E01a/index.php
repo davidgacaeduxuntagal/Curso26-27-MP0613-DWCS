@@ -1,4 +1,11 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - XSS: mensaje y código se escribían sin escapar en value='...' y en el resultado (el código puede
+ *   contener < o comillas). Ahora htmlspecialchars().
+ * - El campo oculto primeraVez solo se escribía la primera vez o con error.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
     // importante recordar que en codificación de caracteres UTF-8, hay caracteres que ocupan 1 byte, otros
     //  caracteres ocupan 2 bytes, etc: NO podemos recorrer la cadena de texto con indice de string 
     //  $cadena[$i] : hay que utilizar funciones Multibyte (mb) string
@@ -48,17 +55,13 @@
     </style>
 </head>
 <body>
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $cadenaReferencia = 'abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789';
                     
-    $segundaVez = false;
- 
-    if ( !isset($_GET['primeraVez']) ) {
-        echo '<input type="hidden"  name="primeraVez" value="true" />';
-    } else {
-        $segundaVez = true;
-    }
+    // CORREGIDO: el campo oculto solo se escribía la primera vez (o con error): se escribe siempre
+    echo '<input type="hidden"  name="primeraVez" value="true" />';
+    $segundaVez = isset($_GET['primeraVez']);
 
     if ( !isset($_GET['codigo']) ) {
         $codigo  = 'fkdjfklhgosidfowheoihfosfdlkfjlkdfjoiwejf2343sd987238479lkdjflk4';
@@ -70,23 +73,27 @@
         if ($segundaVez) {
             echo <<<MARCA
             <p style="color: red">Rellene el campo mensaje, por favor</p>
-            <input type="hidden"  name="primeraVez" value="true" />
 MARCA;
         }   
     } 
     
     $mensaje = empty($_GET['mensaje']) ? '' : $_GET['mensaje'];
 
+    // CORREGIDO: XSS: mensaje y código se escribían sin escapar en value='...' (con comilla simple basta
+    // un apóstrofo para salir del atributo): htmlspecialchars con ENT_QUOTES
+    $mensajeHtml = htmlspecialchars($mensaje, ENT_QUOTES);
+    $codigoHtml  = htmlspecialchars($codigo, ENT_QUOTES);
+
 
     echo <<<MARCA
         <p>
         <label for="mensaje">Mensaje:
-            <input type="text" id="mensaje" size="100" name="mensaje" value='{$mensaje}' class="monoespacio"/>
+            <input type="text" id="mensaje" size="100" name="mensaje" value='{$mensajeHtml}' class="monoespacio"/>
         </label>
         </p>
         <p class="monoespacio">
         <label for="codigo">Código: 
-            <input type="text" id="codigo" size="100" name="codigo" value='{$codigo}' class="monoespacio"/>
+            <input type="text" id="codigo" size="100" name="codigo" value='{$codigoHtml}' class="monoespacio"/>
         </label><br>
         <label for="cadenaReferencia">Refer.: 
             <input type="text" id="cadenaReferencia" size="100" name="cadenaReferencia" value='{$cadenaReferencia}' readonly  class="monoespacio"/>
@@ -101,10 +108,10 @@ MARCA;
         <p class="monoespacio" style="color: red">La cadena código debe tener la misma longitud que la de Refer., por favor</p>
 MARCA;
     } else {
-        echo '<p class="monoespacio" style="color: blue">El mensaje codificado es: ' . codificarMensaje($mensaje, $codigo, $cadenaReferencia) . "</p>";
+        echo '<p class="monoespacio" style="color: blue">El mensaje codificado es: ' . htmlspecialchars(codificarMensaje($mensaje, $codigo, $cadenaReferencia)) . "</p>";   // CORREGIDO: XSS
     }
 ?>
         <button id="botonEnviar" type="submit">Enviar</button>      
-        <button type="reset" ><a href="<?php echo $_SERVER['PHP_SELF'] ?>" style="text-decoration: none;">Borrar</a></button>    </form>
+        <button type="reset" ><a href="<?php echo $_SERVER['SCRIPT_NAME'] ?>" style="text-decoration: none;">Borrar</a></button>    </form>
 </body>
 </html>

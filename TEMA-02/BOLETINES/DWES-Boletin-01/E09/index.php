@@ -1,3 +1,13 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - El mensaje de error nunca salía: se comprobaba $_GET['botonEviar'] (errata).
+ * - Separación: eran 3 espacios (el enunciado pide 4) y en HTML se juntan en uno: ahora 4 &nbsp;.
+ * - Sin validación: "abc" -> TypeError (Fatal), "12.7" -> Deprecated y XSS en value="...".
+ * - HTML: <p"> mal escrito.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,9 +18,10 @@
 </head>
 <body style="font-family: monospace">
 
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
-    $entero = empty($_GET['entero']) ? "": $_GET['entero'];
+    // CORREGIDO: no se validaba: "abc" -> TypeError, "12.7" -> Deprecated, HTML -> XSS en value="..."
+    $entero = (isset($_GET['entero']) && preg_match("/^[+-]?\d{1,18}$/", $_GET['entero']) === 1) ? intval($_GET['entero']) : "";
 
     if( !empty($_GET['botonReset']) ) {
         $entero = ""; 
@@ -24,24 +35,25 @@
 MARCA;
 
     if ( $entero === "" )  {
-        if( !empty($_GET['botonEviar']) ) {
+        if( !empty($_GET['botonEnviar']) ) {   // CORREGIDO: decía botonEviar
             echo '<p style="color: red">Introduzca el entero solicitado, por favor</p>';
         } else {
-            echo '<p">&nbsp;</p>';
+            echo '<p>&nbsp;</p>';
         }
 
         echo '<p id="digitos">&nbsp;</p>';
     } else {
        if ( $entero >= 0) {
+            $sep = str_repeat("&nbsp;", 4);   // CORREGIDO: eran 3 espacios normales y el navegador los junta en uno
             $digitos = $entero % 10;
             $entero = floor($entero / 10);
-            $digitos = ($entero % 10) . "   " . $digitos;
+            $digitos = ($entero % 10) . $sep . $digitos;
             $entero = floor($entero / 10);
-            $digitos = ($entero % 10) . "   " . $digitos;
+            $digitos = ($entero % 10) . $sep . $digitos;
             $entero = floor($entero / 10);
-            $digitos = ($entero % 10) . "   " . $digitos;
+            $digitos = ($entero % 10) . $sep . $digitos;
             $entero = floor($entero / 10);
-            $digitos = ($entero % 10) . "   " . $digitos;
+            $digitos = ($entero % 10) . $sep . $digitos;
             $entero = floor($entero / 10);
 
             if ( $entero !== 0.0) {

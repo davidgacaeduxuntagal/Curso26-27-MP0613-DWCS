@@ -1,3 +1,12 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - La validación no funcionaba (is_int(floatval(...)) siempre es false): "abc" o 0.5 -> DivisionByZeroError
+ *   (Fatal error) y 150 o -9 se aceptaban. Ahora entero de 1 a 100.
+ * - Faltaba cerrar el </form>.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,9 +16,11 @@
     <title>DWES-PHP-B03-E07</title>
 </head>
 <body >
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php 
-    $entero = empty($_GET['entero']) ? "": floatval($_GET['entero']);
+    // CORREGIDO: con floatval() is_int() nunca era cierto: no se validaba nada ("abc" -> $i % 0 ->
+    // DivisionByZeroError, 0.5 -> Deprecated + DivisionByZeroError, 150 o -9 se aceptaban)
+    $entero = (isset($_GET['entero']) && preg_match("/^\d{1,3}$/", $_GET['entero']) === 1) ? intval($_GET['entero']) : "";
     $primeraVez   = empty($_GET['primeraVez'])   ? "": $_GET['primeraVez'];
 
      echo <<<MARCA
@@ -21,9 +32,9 @@
      </p>
   
      <button id="botonEnviar" type="submit">Enviar</button>      
-     <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+     <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
 MARCA;
-    if ( $entero === "" ||  is_int($entero))  {
+    if ( $entero === "" || $entero < 1 || $entero > 100 )  {
         if ( $primeraVez === "" ) {
             echo <<<PRIMERAVEZ
                  <input type="hidden" name="primeraVez" value="false"/>
@@ -53,5 +64,6 @@ DATOSOK;
     echo "</pre>";
 }
 ?>    
+    </form>   <!-- CORREGIDO: faltaba cerrar el formulario -->
 </body>
 </html>

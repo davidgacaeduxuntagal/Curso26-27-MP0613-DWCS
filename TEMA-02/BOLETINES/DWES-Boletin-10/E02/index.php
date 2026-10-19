@@ -1,4 +1,11 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Sin validación: "abc" -> TypeError; -1 -> recursión infinita (memoria agotada); 30 -> tiempo agotado.
+ *   Ahora entero de 1 a 10.
+ * - Había dos </form>.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
 $contador = 0;
 // Vamos a utilizar una variable global para contar el número de pasos
 // aunque esto no se pide en el enunciado, puede ser ilustrativo.
@@ -28,9 +35,12 @@ function torresDeHanoi (int $discos, int $posteInicial, int $posteFinal, int $po
     <h1>Torres de Hanoi</h1>
     <img src="torresHanoi.png" alt="Imagen juego milenario Torres de Hanoi"/>
     
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
-    $numeroDiscos = empty($_GET['numeroDiscos']) ? "VACIO": $_GET['numeroDiscos'];
+    // CORREGIDO: no se validaba: "abc" -> TypeError, -1 -> recursión infinita (memoria agotada),
+    // 3.5 -> Deprecated y 30 -> se agotaba el tiempo (2^30 - 1 movimientos). Entero de 1 a 10.
+    $numeroDiscos = (isset($_GET['numeroDiscos']) && preg_match("/^\d{1,2}$/", $_GET['numeroDiscos']) === 1 &&
+                     $_GET['numeroDiscos'] >= 1 && $_GET['numeroDiscos'] <= 10) ? intval($_GET['numeroDiscos']) : "VACIO";
     echo <<<MARCA
     <div id="entrada">
         <p>
@@ -42,14 +52,14 @@ MARCA;
 
     if ( $numeroDiscos === "VACIO"  )  {
         echo <<<MARCA
-        <p style="color: red">Rellene todos los campos, por favor</p>
+        <p style="color: red">Introduzca un número de discos entre 1 y 10, por favor</p>
 MARCA;
     } else {
         torresDeHanoi($numeroDiscos, 1, 3, 2);
     }
 ?>
         <button id="botonEnviar" type="submit">Enviar</button>      
-        <button type="reset" ><a href="<?php echo $_SERVER['PHP_SELF'] ?>" style="text-decoration: none;">Borrar</a></button>    </form>
-    </form>
+        <button type="reset" ><a href="<?php echo $_SERVER['SCRIPT_NAME'] ?>" style="text-decoration: none;">Borrar</a></button>
+    </form>   <!-- CORREGIDO: el formulario se cerraba dos veces -->
 </body>
 </html>

@@ -1,3 +1,13 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - La validación no funcionaba: is_int(floatval(...)) siempre es false, así que "abc" o -5 daban suma 0
+ *   sin aviso, 12.5 se aceptaba y 1e10 agotaba el tiempo de ejecución (Fatal error).
+ * - El mensaje de error decía "entre 1 y 100" (copiado del ejercicio 7).
+ * - Faltaba cerrar el </form>.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,9 +17,11 @@
     <title>DWES-PHP-B03-E02</title>
 </head>
 <body >
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php 
-    $entero = empty($_GET['entero']) ? "": floatval($_GET['entero']);
+    // CORREGIDO: con floatval() is_int() nunca era cierto y no se validaba nada ("abc" sumaba hasta 0,
+    // 12.5 se aceptaba y 1e10 agotaba el tiempo de ejecución). Entero positivo de 7 cifras como mucho.
+    $entero = (isset($_GET['entero']) && preg_match("/^\d{1,7}$/", $_GET['entero']) === 1) ? intval($_GET['entero']) : "";
     $primeraVez   = empty($_GET['primeraVez'])   ? "": $_GET['primeraVez'];
 
      echo <<<MARCA
@@ -21,9 +33,9 @@
      </p>
   
      <button id="botonEnviar" type="submit">Enviar</button>      
-     <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+     <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
 MARCA;
-    if ( $entero === "" ||  is_int($entero))  {
+    if ( $entero === "" || $entero < 1 )  {
         if ( $primeraVez === "" ) {
             echo <<<PRIMERAVEZ
                  <input type="hidden" name="primeraVez" value="false"/>
@@ -34,7 +46,7 @@ PRIMERAVEZ;
                  <input type="hidden" name="primeraVez" value="false"/>
             </div>   
             <div>
-                <p id="salida" style="color: red">Por favor, Introduzca un número entre 1 y 100</p>
+                <p id="salida" style="color: red">Por favor, introduzca un número entero positivo (7 cifras como máximo)</p>
             </div> 
 SEGUNDAVEZ;
         }
@@ -54,5 +66,6 @@ DATOSOK;
     echo "</pre>";
 }
 ?>    
+    </form>   <!-- CORREGIDO: faltaba cerrar el formulario -->
 </body>
 </html>

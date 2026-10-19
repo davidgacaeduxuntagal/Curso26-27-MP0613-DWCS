@@ -1,3 +1,10 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Entrada limitada a 12 cifras (ver formulario3.php).
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,14 +15,14 @@
 </head>
 <body style="font-family: monospace">
 
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+<form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     /* 
      * EXACTAMENTE LO MISMO QUE DWES-PHP-B02-03a PERO 
      *  SEPARANDO LA PRESENTACIÓN USANDO FICHEROS DE "FORMULARIOS"
     */
     $estado = (!isset($_GET['estado'])) ? 0 : intval($_GET['estado']);
-    $numero = (!isset($_GET['numero'])  || preg_match("/^\d+$/", $_GET['numero']) !== 1) ? "INVALIDO" : intval($_GET['numero']);
+    $numero = (!isset($_GET['numero'])  || preg_match("/^\d{1,12}$/", $_GET['numero'])   /* CORREGIDO: máximo 12 cifras */ !== 1) ? "INVALIDO" : intval($_GET['numero']);
 
 
     switch($estado) {

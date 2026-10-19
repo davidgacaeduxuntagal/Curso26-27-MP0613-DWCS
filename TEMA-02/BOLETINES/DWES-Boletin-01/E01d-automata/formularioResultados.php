@@ -1,4 +1,8 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Se añade el párrafo del cociente (lo pide el enunciado).
+ */
         echo <<<MARCA
         <!--  Estado autómata -->
         <input type="hidden" name="estado" value="{$estado}"/>
@@ -15,6 +19,7 @@
         <p id='suma'>La suma es: {$suma}</p>
         <p id='resta'>La resta es: {$resta} </p>
         <p id='producto'>El producto es: {$producto} </p>
+        <p id='cociente'>El cociente es: {$cociente} </p>
         <p id='resto'>El resto es: {$resto} </p>
 MARCA;
 ?>

@@ -1,3 +1,11 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - empty() trataba el 0 como campo vacío y no se validaba que fuesen enteros: "abc" -> TypeError (Fatal),
+ *   "1.5" se aceptaba y el valor se escribía sin escapar en value="..." (XSS). Ahora enteros con preg_match.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,14 +16,15 @@
 </head>
 <body style="font-family: monospace">
 
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     // Este es un ejemplo inicial y no estamos metiendo código para:
     //  - validar los números enteros
     //  - convertir explícitamente los string a enteros
-    $entero1 = empty($_GET['entero1']) ? "": $_GET['entero1'];
-    $entero2 = empty($_GET['entero2']) ? "": $_GET['entero2'];
-    $entero3 = empty($_GET['entero3']) ? "": $_GET['entero3'];
+    // CORREGIDO: empty() trataba el 0 como vacío y no se validaba: "abc" -> TypeError y XSS en value="..."
+    $entero1 = (isset($_GET['entero1']) && preg_match("/^[+-]?\d{1,18}$/", $_GET['entero1']) === 1) ? intval($_GET['entero1']) : "";
+    $entero2 = (isset($_GET['entero2']) && preg_match("/^[+-]?\d{1,18}$/", $_GET['entero2']) === 1) ? intval($_GET['entero2']) : "";
+    $entero3 = (isset($_GET['entero3']) && preg_match("/^[+-]?\d{1,18}$/", $_GET['entero3']) === 1) ? intval($_GET['entero3']) : "";
 
     if( !empty($_GET['botonReset']) ) {
         $entero1 =  "";
@@ -40,7 +49,7 @@ MARCA;
 
     if ( $entero1 === "" || $entero2 === "" || $entero3 === "" )  {
         if( !empty($_GET['botonEnviar']) ) {
-            echo '<p style="color: red">Rellene todos los campos, por favor</p>';
+            echo '<p style="color: red">Rellene todos los campos con números enteros, por favor</p>';
         } else {
             echo '<p>&nbsp;</p>';
         }

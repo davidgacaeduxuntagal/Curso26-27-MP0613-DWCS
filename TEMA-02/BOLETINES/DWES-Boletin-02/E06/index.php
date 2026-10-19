@@ -1,3 +1,11 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - El enunciado pide enteros no negativos y se rechazaba el 0 ($numero < 1).
+ * - El contador oculto no se validaba: con contador=99 se terminaba en el primer número.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +16,7 @@
 </head>
 <body style="font-family: monospace">
 
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+<form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     // Comprobamos todas las variables, por si es manipulado el HTML en el cliente:
     $estado   = (!isset($_GET['estado'])) ? 0 : intval($_GET['estado']);
@@ -28,12 +36,13 @@
             break;
 
         case 1: 
-            if ( $contador === "INVALIDO" || $mayor1 === "INVALIDO" || $mayor2 === "INVALIDO" ) {
+            // CORREGIDO: también se comprueba que el contador oculto esté entre 1 y 10
+            if ( $contador === "INVALIDO" || $mayor1 === "INVALIDO" || $mayor2 === "INVALIDO" || $contador < 1 || $contador > 10 ) {
                 throw new Error("Han manipulado el HTML: (\$contador=".$contador."  \$mayor1=".$mayor1. "   \$mayor2=".$mayor2);
             }
 
             $estado = 1;
-            if ( $numero === "INVALIDO" || $numero < 1 ) {
+            if ( $numero === "INVALIDO" || $numero < 0 ) {   // CORREGIDO: el 0 es no negativo (antes < 1)
                 include "formulario2.php";
             } else if ($contador < 10 ) {
                 if ( $numero > $mayor1 ) {

@@ -1,3 +1,12 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - empty() trataba el 0 como campo vacío: con velocidad inicial 0 pedía rellenar los campos.
+ * - Sin validación: "abc" -> TypeError (Fatal) y el valor se escribía sin escapar (XSS). Ahora is_numeric().
+ * - Con un campo vacío se escribía value="VACIO" en el formulario.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,15 +17,17 @@
 </head>
 <body style="font-family: monospace">
 
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $botonEnviar = !isset($_GET['botonEnviar']) || $_GET['botonEnviar'] != "Enviar" ? false : true;
     $botonReset  = !isset($_GET['botonReset'])  || $_GET['botonReset'] != "Reset" ? false : true;
 
     // faltaría validar los enteros
-    $valorU = empty($_GET['u']) ? "VACIO": $_GET['u']; 
-    $valorA = empty($_GET['a']) ? "VACIO": $_GET['a'];
-    $valorT = empty($_GET['t']) ? "VACIO": $_GET['t'];
+    // CORREGIDO: empty() trataba 0 como vacío (u = 0, el caso más habitual, daba error) y no se validaba
+    // nada: "abc" provocaba TypeError y un valor con HTML se escribía tal cual (XSS). is_numeric() lo resuelve.
+    $valorU = (isset($_GET['u']) && is_numeric($_GET['u'])) ? $_GET['u'] : "VACIO";
+    $valorA = (isset($_GET['a']) && is_numeric($_GET['a'])) ? $_GET['a'] : "VACIO";
+    $valorT = (isset($_GET['t']) && is_numeric($_GET['t'])) ? $_GET['t'] : "VACIO";
     
     if( $botonReset ) {
         $valorU = "VACIO"; 
@@ -24,24 +35,29 @@
         $valorT = "VACIO";
     }
 
+    // CORREGIDO: antes se escribía value="VACIO" en los campos
+    $mostrarU = $valorU === "VACIO" ? "" : $valorU;
+    $mostrarA = $valorA === "VACIO" ? "" : $valorA;
+    $mostrarT = $valorT === "VACIO" ? "" : $valorT;
+
     echo <<<MARCA
     <p>
         <label for="velocidadInicial">Introduzca velocidad inicial (m/s):</label>
-        <input type="number" step="any" id="velocidadInicial" name="u" value="{$valorU}" />
+        <input type="number" step="any" id="velocidadInicial" name="u" value="{$mostrarU}" />
     </p>
     <p>
         <label for="aceleracion">Introduzca aceleración del objeto (m/s^2):</label>
-        <input type="number"  step="any" id="aceleracion" name="a" value="{$valorA}"  />
+        <input type="number"  step="any" id="aceleracion" name="a" value="{$mostrarA}"  />
     </p>
     <p>
         <label for="tiempoTranscurrido">Introduzca tiempo transcurrido (s):</label>
-        <input type="number"  step="any" id="tiempoTranscurrido" name="t" value="{$valorT}" />
+        <input type="number"  step="any" id="tiempoTranscurrido" name="t" value="{$mostrarT}" />
     </p>
 MARCA;
 
     if ( $valorU === "VACIO" || $valorA === "VACIO" || $valorT === "VACIO" )  {
         if ( $botonEnviar ) {
-            echo '<p style="color: red">Rellene todos los campos, por favor</p>';
+            echo '<p style="color: red">Rellene todos los campos con números, por favor</p>';
         } else {
             echo '<p>&nbsp;</p>';
         }

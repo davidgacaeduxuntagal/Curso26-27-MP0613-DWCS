@@ -1,5 +1,10 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - $condicion no estaba definida: Warning "Undefined variable" al ejecutar los ejemplos.
+ */
 // DWES-PHP-B03-06
+$condicion = false;   // CORREGIDO: no estaba definida (Warning: Undefined variable)
 do {
     // código
 } while ($condicion);

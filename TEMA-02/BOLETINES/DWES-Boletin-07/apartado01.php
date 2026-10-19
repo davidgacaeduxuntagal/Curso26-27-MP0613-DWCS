@@ -1,4 +1,9 @@
 <?php 
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - e) $a5[] = "10" e i) $a9["2E1"] son errores fatales (Error y TypeError) y el script terminaba en e):
+ *   no se ejecutaba el resto. Se dejan comentadas, como hace el apartado 2 con $a5.
+ */
 // DWES-PHP-B07-01
 
 // Strings
@@ -17,7 +22,8 @@ echo $a3["0"] . " ;  " . $a3[1.0]  .  " ; " .  $a3["2"] . " ; " . $a3["003"] ;
 $a4 = "Hola"[2];
 
 $a5 = "Hola ";
-$a5[] = "10"; 
+// $a5[] = "10";   // CORREGIDO: Fatal error ([] operator not supported for strings): paraba el
+                     // script. Se comenta, como hace el apartado 2 con $a5
 
 $a6 = "10.37 hola";
 $r6 = 10 + $a6;
@@ -28,7 +34,8 @@ $a8 = "aquella mañana era uNa mañana cualquiera; no obstante no lo fue.";
 echo $a8["2E1" + 1];
 
 $a9 = "aquella mañana era uNa mañana cualquiera; no obstante no lo fue.";
-echo $a9["2E1"];
+// echo $a9["2E1"];   // CORREGIDO: TypeError (Cannot access offset of type string on string): paraba
+                      // el script y no se ejecutaban j) y k). Se comenta
 
 $b10 = "HOLA";
 $c10 = strlen($b10);

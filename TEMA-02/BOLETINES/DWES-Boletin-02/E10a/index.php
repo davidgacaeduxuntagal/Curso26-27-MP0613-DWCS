@@ -1,3 +1,9 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +14,7 @@
 </head>
 <body style="font-family: monospace">
 
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+<form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $estado  = (!isset($_GET['estado'])) ? 0 : intval($_GET['estado']);
     $numero  = (!isset($_GET['numero'])  || preg_match("/^[01]{1,5}$/", $_GET['numero']) !== 1 || strlen($_GET['numero']) > 5) ? "INVALIDO" : $_GET['numero'];

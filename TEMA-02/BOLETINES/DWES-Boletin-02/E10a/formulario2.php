@@ -1,4 +1,8 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
    $numero = "";
    echo <<<SALIDA
    <div class="entrada">
@@ -12,7 +16,7 @@
                     
        <!--  Botonera -->
        <button type="submit">Enviar</button>      
-       <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+       <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
    </div>
 SALIDA;            
 ?>

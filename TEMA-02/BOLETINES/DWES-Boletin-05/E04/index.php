@@ -1,4 +1,14 @@
 <?php 
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - El resultado se pintaba con dimensiones (columnas1 x columnas2) en vez de (filas1 x columnas2): con
+ *   2x3 por 3x2 salía una fila de más con Warnings y con 3x2 por 2x2 faltaba una fila.
+ * - No se validaban los datos: una celda vacía o con texto -> TypeError al multiplicar. Nueva función
+ *   esMatrizNumerica() y aviso; las celdas no numéricas se marcan en rojo.
+ * - XSS: los valores se escribían sin escapar; matriz1=hola -> TypeError en count().
+ * - Sin límite de dimensiones: ahora de 1 a 10 (como dice el enunciado del ejercicio 3).
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
 function imprimirMatriz(int $filas, int $columnas, int $numeroMatriz): array {
     // Crear tabla básica que permite introducir los datos de la matriz
     echo "<table class='matrix'>";
@@ -6,7 +16,7 @@ function imprimirMatriz(int $filas, int $columnas, int $numeroMatriz): array {
     echo "<tbody>";
 
     $activa = false;
-    if (isset($_GET['matriz' . $numeroMatriz])) {
+    if (isset($_GET['matriz' . $numeroMatriz]) && is_array($_GET['matriz' . $numeroMatriz])) {
         $matriz = $_GET['matriz' . $numeroMatriz];
         $activa = true;
     } else {
@@ -19,7 +29,9 @@ function imprimirMatriz(int $filas, int $columnas, int $numeroMatriz): array {
 
         for($columna = 0; $columna < $columnas; $columna++) {
             echo "<td>";
-            echo "<input type='number' name=\"matriz{$numeroMatriz}[$fila][$columna]\" "  . ($activa ? "value=\"{$matriz[$fila][$columna]}\" " : '' ) . "/>";   
+            // CORREGIDO: el valor se escribía sin escapar (XSS) y una celda que no llega daba "Undefined array key"
+            $valor = $activa ? htmlspecialchars($matriz[$fila][$columna] ?? "") : "";
+            echo "<input type='number' name=\"matriz{$numeroMatriz}[$fila][$columna]\" value=\"{$valor}\" " . (is_numeric($valor) || $valor === "" ? "" : "style='background: #fcc' ") . "/>";   
             echo "</td>";
         }
 
@@ -30,6 +42,19 @@ function imprimirMatriz(int $filas, int $columnas, int $numeroMatriz): array {
     echo "</table>";
 
     return $matriz;
+}
+
+// CORREGIDO: función nueva para validar los datos antes de multiplicar (una celda vacía o con texto
+// lanzaba TypeError: Unsupported operand types)
+function esMatrizNumerica($matriz, int $filas, int $columnas): bool {
+    for ($fila = 0; $fila < $filas; $fila++) {
+        for ($columna = 0; $columna < $columnas; $columna++) {
+            if (!isset($matriz[$fila][$columna]) || !is_numeric($matriz[$fila][$columna])) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 function productoMatricial($m1, $m2): array {
@@ -67,7 +92,7 @@ function productoMatricial($m1, $m2): array {
 </head>
 <body >
     <h1>Producto de matrices:</h1>
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php 
     $numeroFilas     = empty($_GET['numeroFilas'])    ? "": intval($_GET['numeroFilas']);
     $numeroColumnas1 = empty($_GET['numeroColumnas1']) ? "": intval($_GET['numeroColumnas1']);
@@ -89,10 +114,11 @@ function productoMatricial($m1, $m2): array {
             <input type="number" id="numeroColumnas2" name="numeroColumnas2"  value="{$numeroColumnas2}" />
         </p>                    
             <button type="submit" >Enviar</button>
-            <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+            <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
 
 MARCA;
-    if ( $numeroFilas === ""  || $numeroFilas < 1 || 
+    // CORREGIDO: sin límite superior; el enunciado del ejercicio 3 dice 1 <= n, m, t <= 10
+    if ( $numeroFilas === ""  || $numeroFilas < 1 || $numeroFilas > 10 || $numeroColumnas1 > 10 || $numeroColumnas2 > 10 || 
          $numeroColumnas1 < 1 || $numeroColumnas1 === "" ||
          $numeroColumnas2 < 1 || $numeroColumnas2 === "" ) {
         if ( $primeraVez === "" ) {
@@ -106,7 +132,7 @@ PRIMERAVEZ;
             </div>   
             <div>
                 <p id="salida" style="color: red">Por favor, introduzca ambos datos, 
-                 número de filas y número de columnas, ambos enteros mayores o iguales a 1</p>
+                 número de filas y número de columnas, todos enteros de 1 a 10</p>
             </div> 
 SEGUNDAVEZ;
         }
@@ -116,14 +142,16 @@ SEGUNDAVEZ;
    </div>   
 DATOSOK;     
         // Comprobamos si cambiaron los datos del formulario: si es así, reseteamos matrices:
-        if ( isset($_GET['matriz1']) && 
-            ($numeroFilas !== count($_GET['matriz1']) || 
+        if ( isset($_GET['matriz1']) &&   // CORREGIDO: con matriz1=hola, count() lanzaba TypeError
+            (!is_array($_GET['matriz1']) || !is_array($_GET['matriz1'][0] ?? null) ||
+             $numeroFilas !== count($_GET['matriz1']) ||
              $numeroColumnas1 !== count($_GET['matriz1'][0])) ) {
             unset($_GET['matriz1']);
         }
 
-        if ( isset($_GET['matriz2']) && 
-             ($numeroColumnas1 !== count($_GET['matriz2']) || 
+        if ( isset($_GET['matriz2']) &&   // CORREGIDO: con matriz2=hola, count() lanzaba TypeError
+             (!is_array($_GET['matriz2']) || !is_array($_GET['matriz2'][0] ?? null) ||
+              $numeroColumnas1 !== count($_GET['matriz2']) ||
               $numeroColumnas2 !== count($_GET['matriz2'][0])) ) {
             unset($_GET['matriz2']);
         }
@@ -134,9 +162,15 @@ DATOSOK;
         $matriz2 = imprimirMatriz($numeroColumnas1, $numeroColumnas2, 2);
 
         if (isset($_GET['matriz1']) && isset($_GET['matriz2']) ) {
-            $_GET['matriz3'] = productoMatricial($matriz1, $matriz2);
-            echo "<h2>Producto matricial:</h2>";
-            $matriz3 = imprimirMatriz($numeroColumnas1, $numeroColumnas2, 3);
+            if ( esMatrizNumerica($matriz1, $numeroFilas, $numeroColumnas1) && esMatrizNumerica($matriz2, $numeroColumnas1, $numeroColumnas2) ) {
+                $_GET['matriz3'] = productoMatricial($matriz1, $matriz2);
+                echo "<h2>Producto matricial:</h2>";
+                // CORREGIDO: el producto de (m x n) por (n x t) es m x t: antes se pintaba n x t
+                // (filas de más -> "Undefined array key" o filas de menos)
+                $matriz3 = imprimirMatriz($numeroFilas, $numeroColumnas2, 3);
+            } else {
+                echo "<p style='color: red'>Rellene todas las celdas con números (enteros o decimales)</p>";
+            }
         }
     }
 ?>  

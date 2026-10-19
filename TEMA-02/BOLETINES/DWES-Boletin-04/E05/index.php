@@ -1,10 +1,13 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Se rellenaba con ceros a la izquierda hasta 7 cifras; el enunciado no lo pide.
+ */
     function separarEnDigitos(int $numero) {
         $salida = '';
         $cerosIzquierda = '';
-        $cerosIzquierda .= $numero < 1000000 ? '0    ': '';
-        $cerosIzquierda .= $numero <  100000 ? '0    ': '';
-        $cerosIzquierda .= $numero <   10000 ? '0    ': '';
+        // CORREGIDO: se añadían ceros a la izquierda hasta tener 7 cifras ("0 9 6 6 0 1 3" para 966013);
+        // el enunciado no los pide: 455334 ---> "4    5    5    3    3    4"
 
         while ($numero > 0) {
             $salida = (int)($numero % 10) . $salida;

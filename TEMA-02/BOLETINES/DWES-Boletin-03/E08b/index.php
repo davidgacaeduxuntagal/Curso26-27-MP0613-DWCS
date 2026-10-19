@@ -1,4 +1,11 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - No se comprobaba el límite superior del año (el enunciado pide 1 - 3000).
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ * Nota: la adaptación de la fórmula de Keith y Craver es correcta (el y-- se aplica después de sumar el año y
+ * las divisiones se truncan con (int)): coincide con DateTime en las 1 095 727 fechas de los años 1 a 3000.
+ */
     function diaDeLaSemana($dia, $mes, $anno) {
         if ($mes < 3) {
             $dia += $anno;
@@ -39,7 +46,7 @@
 </head>
 <body >
 
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $dia  = empty($_GET['dia']) ?  "": intval($_GET['dia']);
     $mes  = empty($_GET['mes']) ?  "": intval($_GET['mes']);
@@ -80,8 +87,8 @@ MARCA;
             echo "<p>" . "El número de mes {$mes} no es válido, por favor, introduzca valor correcto" . "</p>";
         } else if ( $dia > $temp || $dia < 1) {
             echo "<p>" . "Número de días no válido para este mes: por favor, introduzca valor correcto" . "[1..{$temp}]" . "</p>";
-        } else if ( $anno <= 0 ) {
-            echo "<p>" . "Número de año incorrecto: debe ser mayor que 0" . "</p>";
+        } else if ( $anno <= 0 || $anno > 3000 ) {   // CORREGIDO: el enunciado pide años de 1 a 3000
+            echo "<p>" . "Número de año incorrecto: debe estar entre 1 y 3000" . "</p>";
         }
         else {
             echo "<p>". "El día de semana es: " . diaDeLaSemana($dia, $mes, $anno) . "</p>"; 
@@ -89,7 +96,7 @@ MARCA;
     }
 ?>
         <button id="botonEnviar" type="submit">Enviar</button>      
-        <button type="reset" ><a href="<?php echo $_SERVER['PHP_SELF'] ?>" style="text-decoration: none;">Borrar</a></button>
+        <button type="reset" ><a href="<?php echo $_SERVER['SCRIPT_NAME'] ?>" style="text-decoration: none;">Borrar</a></button>
     </form>
 </body>
 </html>

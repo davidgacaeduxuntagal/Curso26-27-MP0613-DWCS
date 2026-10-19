@@ -1,3 +1,9 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - El cuadrado de 3 aparecía como 5 (es 9).
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,7 +23,7 @@ Número\t\tCuadrado\t\t Cubo
     0  \t\t      0 \t\t      0
     1  \t\t      1 \t\t      1
     2  \t\t      4 \t\t      8
-    3  \t\t      5 \t\t     27
+    3  \t\t      9 \t\t     27
     4  \t\t     16 \t\t     64
     5  \t\t     25 \t\t    125
     6  \t\t     36 \t\t    216

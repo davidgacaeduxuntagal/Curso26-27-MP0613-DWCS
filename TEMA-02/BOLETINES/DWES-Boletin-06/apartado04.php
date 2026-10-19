@@ -1,4 +1,8 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - aa) ~false lanza TypeError y el script terminaba ahí (no se ejecutaban ab..ak): se deja comentada.
+ */
 // DWES-PHP-B06-04
 
 
@@ -45,7 +49,8 @@ $r = (int) (23 / 2);
 
 $r = (int) (23 % 2);
 
-$r = ~false;
+// $r = ~false;   // CORREGIDO: TypeError (Cannot perform bitwise not on bool): paraba el script y
+                  // no se ejecutaba el resto. Se comenta, como 10/-0 en el apartado 1
 
 $r = !false;
 

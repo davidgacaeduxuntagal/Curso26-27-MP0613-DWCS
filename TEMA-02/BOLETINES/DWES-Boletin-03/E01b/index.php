@@ -1,4 +1,13 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Se admitía estado=4, que no existe en $automata: Warning "Undefined array key" y página vacía.
+ * - Estados 2 y 3: los campos ocultos total, contador y sumatorio no se validaban: total=0 ->
+ *   DivisionByZeroError; sumatorio=abc -> TypeError. Ahora se consideran manipulación, como el estado.
+ * - sanitizar.php: TypeError si llegaba un array y se aceptaban números que no caben en un int.
+ * - Faltaba cerrar el </form>.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
     // Estados: este array no lo utilizamos; solo está con propósito de documentar
     $nombresEstados = [ "CargaInicial",                     // S0
                         "CargaInicialTotalInvalido",        // S1
@@ -47,7 +56,7 @@
 </head>
 <body style="font-family: monospace">
 
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+<form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     include "sanitizar.php";
 
@@ -58,10 +67,17 @@
     $sumatorio = !isset($_GET['sumatorio']) ? "NOVALIDO": formatoEnteroValido($_GET['sumatorio']);
     $estado    = !isset($_GET['estado'])    ? 0 : formatoEnteroValido($_GET['estado']);             // Comenzamos en estado ST0 = 0
     
-    if ( $estado === "NOVALIDO" || $estado < 0 || $estado > 4 ) {
+    if ( $estado === "NOVALIDO" || $estado < 0 || $estado > 3 ) {
         throw new Exception("ERROR: han manipulado el HTML en cliente");
     } else {
         $estado = intval($estado);
+    }
+
+    // CORREGIDO: en los estados 2 y 3 no se validaban los campos ocultos (solo su formato): con total=0
+    // había DivisionByZeroError y con sumatorio=abc, TypeError. Además el estado 4 no existe (antes > 4).
+    if ( $estado >= 2 && ( $total === "NOVALIDO" || $total < 1 || $contador === "NOVALIDO" || $contador < 1 ||
+                           $contador > $total || $sumatorio === "NOVALIDO" ) ) {
+        throw new Exception("ERROR: han manipulado el HTML en cliente");
     }
 
     // Obtenemos la siguiente transición consultando la tabla de transiciones
@@ -83,6 +99,6 @@
     }
 
 ?>
-  
+</form>   <!-- CORREGIDO: faltaba cerrar el formulario -->
 </body>
 </html>

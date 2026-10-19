@@ -1,3 +1,14 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Faltaba el cociente que pide el enunciado (se añade también en los tres formularios).
+ * - Con el segundo número 0, $numero1 % $numero2 lanzaba DivisionByZeroError: se añade el predicado
+ *   "numero2 != 0" y se muestra un aviso en cociente y resto.
+ * - sanitizar.php: formatoEnteroValido() aceptaba números que no caben en un int y lanzaba TypeError
+ *   si llegaba un array; ahora como mucho 18 cifras y comprueba is_string().
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +19,7 @@
 </head>
 <body style="font-family: monospace">
 
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     /* 
     *   Solución usando técnica de un autómata
@@ -57,7 +68,15 @@
                 $suma     = $numero1 + $numero2;
                 $resta    = $numero1 - $numero2;
                 $producto = $numero1 * $numero2;
-                $resto    = $numero1 % $numero2;                
+                // CORREGIDO: faltaba el cociente (lo pide el enunciado) y con numero2 = 0 el resto
+                // lanzaba DivisionByZeroError: es el predicado "segundo número distinto de 0"
+                if ( $numero2 != 0 ) {
+                    $cociente = $numero1 / $numero2;
+                    $resto    = $numero1 % $numero2;
+                } else {
+                    $cociente = "no se puede dividir entre 0";
+                    $resto    = "no se puede dividir entre 0";
+                }
                 include "formularioResultados.php";
             }
             break;         

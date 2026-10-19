@@ -1,3 +1,11 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - El campo oculto primeraVez solo se escribía la primera vez: en envíos alternos no salía el mensaje de error.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ * Nota: el botón Reset sigue sin implementar a propósito (es el ejercicio que se deja al alumno).
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +16,7 @@
 </head>
 <body >
 
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $entero = empty($_GET['entero']) ? "": intval($_GET['entero']);
     echo <<<MARCA
@@ -17,12 +25,10 @@
         <input type="number"  min="1" max="20" step="1"  id="numero" name="entero" value="{$entero}" />
     </p>
 MARCA;
-    $segundaVez = false;
-    if ( !isset($_GET['primeraVez']) ) {
-        echo '<input type="hidden"  name="primeraVez" value="true" />';
-    } else {
-        $segundaVez = true;
-    }
+    // CORREGIDO: el campo oculto solo se escribía la primera vez, así que el tercer envío se tomaba otra vez
+    // como "primera vez" y no salía el mensaje de error: se escribe siempre
+    echo '<input type="hidden"  name="primeraVez" value="true" />';
+    $segundaVez = isset($_GET['primeraVez']);
 
     if ( $entero === "" || $entero < 1 || $entero > 20 )  {  // aunque el html se encarga de comprobar rango, no hace daño probar aquí
         if ($segundaVez) {

@@ -1,9 +1,16 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - empty() trataba el 0 como vacío: x^2 - 4 = 0 (b = 0) pedía los 3 coeficientes.
+ * - floatval() convertía "abc" en 0 y con a = 0 (o "0.0") se dividía entre 0: DivisionByZeroError (Fatal).
+ * - Sin soluciones reales se devolvía 'ERROR'; el enunciado pide NaN (NAN).
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
 function resolverEcuacionSegundoGrado($a, $b, $c): array {
     $discriminante = ($b * $b) - (4 * $a * $c);
 
     if (  $discriminante < 0.0 ) {
-        return ['ERROR', 'ERROR']; 
+        return [NAN, NAN];   // CORREGIDO: el enunciado pide NaN como soluciones
     } else {
         return [ (-$b + sqrt($discriminante))/(2*$a),(-$b - sqrt($discriminante))/(2*$a) ];
     }
@@ -20,11 +27,13 @@ function resolverEcuacionSegundoGrado($a, $b, $c): array {
     <title>DWES-PHP-B04-E03</title>
 </head>
 <body >
-    <form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php 
-    $coeficienteA = empty($_GET['coeficienteA']) ? "": floatval($_GET['coeficienteA']);
-    $coeficienteB = empty($_GET['coeficienteB']) ? "": floatval($_GET['coeficienteB']);
-    $coeficienteC = empty($_GET['coeficienteC']) ? "": floatval($_GET['coeficienteC']);
+    // CORREGIDO: empty() trataba el 0 como vacío (b = 0 o c = 0 pedían los 3 coeficientes) y floatval()
+    // convertía "abc" en 0: con a = 0 se dividía entre 0 (DivisionByZeroError). Ahora is_numeric().
+    $coeficienteA = (isset($_GET['coeficienteA']) && is_numeric($_GET['coeficienteA'])) ? floatval($_GET['coeficienteA']) : "";
+    $coeficienteB = (isset($_GET['coeficienteB']) && is_numeric($_GET['coeficienteB'])) ? floatval($_GET['coeficienteB']) : "";
+    $coeficienteC = (isset($_GET['coeficienteC']) && is_numeric($_GET['coeficienteC'])) ? floatval($_GET['coeficienteC']) : "";
     $primeraVez   = empty($_GET['primeraVez'])   ? "": $_GET['primeraVez'];
 
      echo <<<MARCA
@@ -44,7 +53,7 @@ function resolverEcuacionSegundoGrado($a, $b, $c): array {
          <input type="number" id="coeficienteC" name="coeficienteC" value="{$coeficienteC}"/>
      </p>
      <button id="botonEnviar" type="submit">Enviar</button>      
-     <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+     <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
 
 MARCA;
     if ( $coeficienteA === "" || !(is_float($coeficienteA) || is_int($coeficienteA)) || 
@@ -60,7 +69,7 @@ PRIMERAVEZ;
                  <input type="hidden" name="primeraVez" value="false"/>
             </div>   
             <div>
-                <p id="salida" style="color: red">Por favor, introduzca los 3 coeficientes</p>
+                <p id="salida" style="color: red">Por favor, introduzca los 3 coeficientes (números)</p>
             </div> 
 SEGUNDAVEZ;
         }
@@ -70,8 +79,13 @@ SEGUNDAVEZ;
    </div>   
 DATOSOK;         
     echo "<pre style='font-family: monospace'>";
-    $solucion = resolverEcuacionSegundoGrado($coeficienteA, $coeficienteB, $coeficienteC);
-    echo "(Solución ({$coeficienteA},{$coeficienteB},{$coeficienteC}): raíz 1 = {$solucion[0]}  ; raíz 2 = {$solucion[1]} <br>";    
+    // CORREGIDO: con a = 0 no es una ecuación de segundo grado y se dividía entre 0
+    if ($coeficienteA == 0) {
+        echo "Con a = 0 no es una ecuación de segundo grado<br>";
+    } else {
+        $solucion = resolverEcuacionSegundoGrado($coeficienteA, $coeficienteB, $coeficienteC);
+        echo "(Solución ({$coeficienteA},{$coeficienteB},{$coeficienteC}): raíz 1 = {$solucion[0]}  ; raíz 2 = {$solucion[1]} <br>";
+    }
 
     for ($i = 1; $i <= 10; $i++) {
         $coefA = (random_int(1,10) <= 5 ? -1: 1) * ( floor(random_int(1, 50) ));

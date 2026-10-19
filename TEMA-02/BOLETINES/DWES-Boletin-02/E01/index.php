@@ -1,4 +1,13 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Con primeraVez y sin el campo del importe: Warning "Undefined array key".
+ * - Se aceptaban importes negativos (salían impuestos negativos): ahora se piden mayores que 0.
+ * - HTML: <body"> mal escrito.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ * Nota: en el ejemplo del enunciado las etiquetas están cambiadas: 2095,32 es el impuesto estatal (5 %)
+ * y 1676,26 el autonómico (4 %). Esta solución calcula bien, sobre el líquido = total / 1,09.
+ */
 define('IMPUESTO_ESTATAL', 0.05);
 define('IMPUESTO_AUTONOMICO', 0.04);
 ?>
@@ -10,8 +19,8 @@ define('IMPUESTO_AUTONOMICO', 0.04);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DWES-PHP-B02-01</title>
 </head>
-<body">
-    <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="get">
+<body>
+    <form action="<?php echo $_SERVER['SCRIPT_NAME'];?>" method="get">
 
     <div class="entrada">
 <?php 
@@ -27,7 +36,8 @@ define('IMPUESTO_AUTONOMICO', 0.04);
         $totalMensualVentas = 0.00;
         $primeraVez = true;
     } else {
-        $totalMensualVentas = floatval($_GET['totalMensualVentas']);
+        // CORREGIDO: sin el campo daba "Undefined array key" y se aceptaban importes negativos
+        $totalMensualVentas = max(0.0, floatval($_GET['totalMensualVentas'] ?? 0));
     }
     
     echo <<<MARCA
@@ -36,8 +46,8 @@ define('IMPUESTO_AUTONOMICO', 0.04);
             <input type="number" min="0" step="any" id="totalMensualVentas" name="totalMensualVentas" value="{$totalMensualVentas}" />
         </p>
 MARCA;
-        if ( !$primeraVez && $totalMensualVentas == 0 ) {
-        echo "<span style='color: red'> Introduzca el importe, por favor</span>";
+        if ( !$primeraVez && $totalMensualVentas <= 0 ) {
+        echo "<span style='color: red'> Introduzca un importe mayor que 0, por favor</span>";
             }
 
 ?>
@@ -61,7 +71,7 @@ MARCA;
         </div> 
 <?php
     if (!$primeraVez) {
-        $totalMensualVentas   = floatval($_GET['totalMensualVentas']);
+        // CORREGIDO: no se vuelve a leer $_GET (ya se ha leído y validado arriba)
         $liquido              = $totalMensualVentas / (1 + IMPUESTO_AUTONOMICO + IMPUESTO_ESTATAL);
         $impuestosAutonomicos =  $liquido * IMPUESTO_AUTONOMICO;
         $impuestosEstatales   =  $liquido * IMPUESTO_ESTATAL;

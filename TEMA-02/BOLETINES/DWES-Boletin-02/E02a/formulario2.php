@@ -1,10 +1,15 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - El párrafo del aviso se cerraba con <p> en vez de </p>.
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
 $chequear = ["cuenta", "cantidad", "duracion", "interes"];
 $aviso = '';
 
 foreach($chequear as $variable) {
     if ( $$variable === "INVALIDO" ) {
-        $aviso = "<p style='color: red;'>Por favor, revise los campos en rojo, pues tiene/n valor incorrecto:<p>";
+        $aviso = "<p style='color: red;'>Por favor, revise los campos en rojo, pues tiene/n valor incorrecto:</p>";
         $$variable = "";
         $variable = "estilo".$variable;
         $$variable = "style='color: red;'";
@@ -39,7 +44,7 @@ echo <<<SALIDA
     
     <!--  Botonera -->
     <button type="submit">Enviar</button>      
-    <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+    <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
 </div>
 SALIDA;
 

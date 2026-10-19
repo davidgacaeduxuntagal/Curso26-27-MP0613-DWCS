@@ -1,3 +1,14 @@
+<?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Con un número no válido el campo salía disabled y con value="INVALIDO": no se podía corregir y cada
+ *   Enviar volvía a dar error (solo se salía con Borrar).
+ * - El bucle llegaba hasta numero-2: con un primo grande (2147483647) se agotaba el tiempo de ejecución
+ *   (Fatal error). Se recorre hasta la raíz cuadrada ($i * $i <= $numero), como ya sugería el comentario,
+ *   y se limita la entrada a 12 cifras (intval() de un número mayor que PHP_INT_MAX daba otro número).
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,10 +19,10 @@
 </head>
 <body style="font-family: monospace">
 
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+<form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $estado = (!isset($_GET['estado'])) ? 0 : intval($_GET['estado']);
-    $numero = (!isset($_GET['numero'])  || preg_match("/^\d+$/", $_GET['numero']) !== 1) ? "INVALIDO" : intval($_GET['numero']);
+    $numero = (!isset($_GET['numero'])  || preg_match("/^\d{1,12}$/", $_GET['numero'])   /* CORREGIDO: máximo 12 cifras */ !== 1) ? "INVALIDO" : intval($_GET['numero']);
 
 
     switch($estado) {
@@ -30,7 +41,7 @@
 
                 <!--  Botonera -->
                 <button type="submit">Enviar</button>      
-                <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+                <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
             </div>
 SALIDA;
             break;
@@ -41,8 +52,8 @@ SALIDA;
                 echo <<<SALIDA
                 <div class="entrada">
                     <p>
-                        <label for="numero" id="textoNumero" style="color: red">Introduzca un NÚMERO ENTERO MAYOR DE 1:</label>
-                        <input type="text" id="numero" name="numero" value="{$numero}" disabled/>
+                        <label for="numero" id="textoNumero" style="color: red">Introduzca un NÚMERO ENTERO MAYOR DE 1 (máximo 12 cifras):</label>
+                        <input type="text" id="numero" name="numero" />   <!-- CORREGIDO: estaba disabled y con value="INVALIDO" -->
                     </p>
 
                     <!--  Estado autómata -->
@@ -50,7 +61,7 @@ SALIDA;
 
                     <!--  Botonera -->
                     <button type="submit">Enviar</button>      
-                    <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+                    <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
                 </div>
     SALIDA;                
             } else {
@@ -67,7 +78,7 @@ SALIDA;
 
                     <!--  Botonera -->
                     <button type="submit">Enviar</button>      
-                    <button type="reset" ><a href="{$_SERVER['PHP_SELF']}" style="text-decoration: none;">Borrar</a></button>
+                    <button type="reset" ><a href="{$_SERVER['SCRIPT_NAME']}" style="text-decoration: none;">Borrar</a></button>
                 </div>
     SALIDA;  
                 echo "<div class=\"salida\">";
@@ -76,7 +87,7 @@ SALIDA;
                 //   N es primo si N no es divisible por cualquier entero (primo) <= raíz 
                 //   cuadrada de N
                 //   (es decir, en vez de $numero - 1, podríamos poner floor(sqrt(numero))                
-                for($i = 2; $i < $numero -1; $i++) {
+                for($i = 2; $i * $i <= $numero; $i++) {   // CORREGIDO: hasta la raíz (antes 2147483647 agotaba el tiempo)
                     if ( $numero % $i === 0 ) {
                         $mensaje =  "<p>El número NO es primo</p>";
                         break;

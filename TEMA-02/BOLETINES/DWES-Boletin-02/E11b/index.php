@@ -1,4 +1,10 @@
 <?php
+/*
+ * ===== CORRECCIONES (revisión de las soluciones del tema 2) =====
+ * - Se aceptaba cualquier número de cifras: intval("99999999999999999999") da PHP_INT_MAX y el resultado
+ *   era el de otro número sin avisar. Ahora como mucho 18 cifras (caben en un int).
+ * - XSS: $_SERVER['PHP_SELF'] cambiado por $_SERVER['SCRIPT_NAME'].
+ */
 // función recursiva
 function espejo($numero, &$invertido) {
     if ( $numero == 0 ) {
@@ -19,10 +25,10 @@ function espejo($numero, &$invertido) {
 </head>
 <body style="font-family: monospace">
 
-<form action="<?php echo $_SERVER['PHP_SELF'] ?>"  method="get">
+<form action="<?php echo $_SERVER['SCRIPT_NAME'] ?>"  method="get">
 <?php
     $estado  = (!isset($_GET['estado'])) ? 0 : intval($_GET['estado']);
-    $numero  = (!isset($_GET['numero'])  || preg_match("/^[1-9]\d*$/", $_GET['numero']) !== 1 ) ? "INVALIDO" : intval($_GET['numero']);
+    $numero  = (!isset($_GET['numero'])  || preg_match("/^[1-9]\d{0,17}$/", $_GET['numero'])   /* CORREGIDO: máximo 18 cifras */ !== 1 ) ? "INVALIDO" : intval($_GET['numero']);
 
     switch($estado) {
         case 0:
