@@ -21,6 +21,8 @@
         $i = 2;
 
         // Por una propiedad matemática, basta con comprobar hasta la raiz
+        // Esto se puede mejorar mucho si se tiene en cuenta que los números pares no son primos (excepto el 2)
+        //  queda como propuesta para tí
         while ( ($i <= $raiz)  &&  (($numero % $i) !== 0) ) {
             $i++;
         }
