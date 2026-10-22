@@ -1,0 +1,88 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f5f5f7;
+    color: #222;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 0 16px;
+}
+
+h1 {
+    text-align: center;
+    color: #3949ab;
+}
+
+.panel {
+    background-color: #fff;
+    border: 1px solid #c5cae9;
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin-bottom: 16px;
+}
+
+fieldset {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+label {
+    margin-right: 16px;
+}
+
+input[type='number'] {
+    width: 60px;
+}
+
+button {
+    padding: 6px 18px;
+    border: none;
+    border-radius: 4px;
+    background-color: #3949ab;
+    color: #fff;
+    cursor: pointer;
+}
+
+.errores {
+    color: #c62828;
+    background-color: #ffebee;
+    border: 1px solid #ef9a9a;
+    padding: 8px 32px;
+}
+
+.figuras {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.figura {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+}
+
+.figura svg {
+    background-color: #fafafa;
+    border: 1px dashed #ddd;
+}
+
+.figura p {
+    font-size: 0.85em;
+    margin: 6px 0 0;
+}
+
+.figura .extra {
+    color: #666;
+    font-style: italic;
+}
+
+.figura.a-medida {
+    border: 2px solid #3949ab;
+}
+
+.resumen {
+    margin-top: 16px;
+}
